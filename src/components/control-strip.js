@@ -50,6 +50,7 @@ class ControlStrip extends React.Component {
                     }
                 }
             );
+            console.log("running comp");
             rpc.run_composition(
                 inputs, deliveryConditions
             );
@@ -58,15 +59,15 @@ class ControlStrip extends React.Component {
 
     render() {
         return (
-            <div class={'controlstrip-container'}
+            <div className={'controlstrip-container'}
                  style={
                      {
                          width:`${this.props.width}px`,
                          height:'30px'
                      }
                  }>
-                <div class={'controlstrip pnl-panel'}>
-                    <div class={'view-tab-container'}>
+                <div className={'controlstrip pnl-panel'}>
+                    <div className={'view-tab-container'}>
                         <Tabs id="view-tab-group" onChange={this.handleTabChange} selectedTabId={this.props.activeView}>
                             <Tab id="graphview" title="Construct" panel={<div />} />
                             <Tab id="plotter" title="Monitor" panel={<div />} />

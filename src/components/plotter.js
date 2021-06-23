@@ -25,8 +25,27 @@ import {
     getMapPlotTypeToDefaultNameCounter
 } from "../state/subplots/selectors";
 import {editSubplotMetaData} from "../state/subplots/actions";
+import { data } from 'jquery';
 
 const mapStateToProps = ({subplots, subplotGrid, subplotRegistry}) => {
+    
+    console.log("(plotter:32) subplots");
+    for (var prop in subplots) {
+        if (prop === "mapIdToDataSources") {
+            console.log("mapIdToDataSources");
+            for (var id in subplots[prop]) {
+                console.log(id + ": " + subplots[prop][id] + ", size: " + subplots[prop][id].size);
+                // console.log("above object size: " + subplots[prop][p].size)
+                for (var i = 0; i < subplots[prop][id].size; i++) {
+                    console.log((subplots[prop][id].keys()[i] ?? "null prop") + ": " + (subplots[prop][id].values()[i] ?? "null val"));
+                    
+                    // ! data within subplot object is null!!
+                }
+            }
+        }
+            // console.log(prop + ": " + subplots[prop]);
+    }
+    
     return {
         subplotIdSet: getSubplotIdSet(subplotRegistry),
         mapIdToName: getMapIdToName(subplots),
@@ -185,6 +204,9 @@ class Plotter extends React.Component {
     }
 
     insertSubPlot(type, position, shiftDirection='right'){
+
+        
+
         var {gridPositions, subplotIdSet} = this.props,
             updatedLayout = {}, maxXNew, maxYNew,
             id = createId(subplotIdSet, PLOT_PREFIX, ID_LEN);
@@ -257,6 +279,12 @@ class Plotter extends React.Component {
     }
 
     createLinePlot(id, name, dataSources, width, height) {
+
+        console.log("(plotter:261) dataSources size:" + dataSources.size);
+        for (var i = 0; i < dataSources.size; i++) {
+            console.log("dataSources[" + i + "]: " + dataSources[i]);
+        }
+
         return <div key={id}>
             <LinePlot
                 id={id}
@@ -276,6 +304,9 @@ class Plotter extends React.Component {
         return [...subplotIdSet].map(
             id => {
                 var {name, dataSources} = subplotMetadata[id];
+                
+                console.log("(plotter:287) name, dataSources size: " + name + ", " + dataSources.size);
+
                 return this.createLinePlot(id, name, dataSources, width, height)
             }
         )
@@ -296,7 +327,7 @@ class Plotter extends React.Component {
             plotSize = this.getSinglePlotSize(rows, cols);
 
         return connectDropTarget (
-            <div class={emptyValidDragHover ? "valid-drag-hover": ""}>
+            <div className={emptyValidDragHover ? "valid-drag-hover": ""}>
             <Resizable
                     style={style}
                     onResize={this.props.onResize}

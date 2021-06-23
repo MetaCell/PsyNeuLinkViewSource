@@ -131,6 +131,9 @@ class WorkSpace extends React.PureComponent {
      *  - (n-dimensional Array) value
      */
     handleIncomingData(event, message) {
+        console.log("handleIncomingData message: " + message);
+        // ! not being called from rpc.js:214
+
         let {componentMapIdToParameterSet: idToParameters,
             componentMapNameToId: nameToId,
             psyNeuLinkMapIdToName: idToName,
@@ -138,6 +141,14 @@ class WorkSpace extends React.PureComponent {
         let ownerName = message.componentName;
         let ownerId = nameToId[ownerName];
         let ownerParameters = idToParameters[ownerId];
+
+        console.log("ownerId: " + ownerId);
+        console.log("idToParameters: ");
+        for (var prop in idToParameters) {
+            console.log(prop + ": " + idToParameters[prop])
+        }
+        // console.log("ownerParameters: " + ownerParameters);
+
         for (const id of ownerParameters){
             if (idToName[id] == message.parameterName){
                 addData({id: id, data: message})
@@ -340,6 +351,7 @@ class WorkSpace extends React.PureComponent {
         self.setState({'filepath':filepath});
         rpcClient.load_script(filepath, (err) => {
                 if (err) {
+                    // console.log("worskpace:343");
                     self.dispatcher.capture({
                             error: "Python interpreter crashed while loading script. ",
                             message:
@@ -357,6 +369,7 @@ class WorkSpace extends React.PureComponent {
                     this.filepath = filepath
                     rpcClient.get_json(composition, function (err) {
                         if (err) {
+                            // console.log("worskpace:361");
                             self.dispatcher.capture({
                                     error: "Python interpreter crashed while loading script.",
                                     message:
@@ -442,7 +455,7 @@ class WorkSpace extends React.PureComponent {
             rowTwoH = Math.ceil(w * 0.2)
         }
         if (!v) {
-            v = Math.ceil(h * 0.7)
+            v = Math.ceil(h * 0.5)
         }
         return(
             {
@@ -460,6 +473,7 @@ class WorkSpace extends React.PureComponent {
         var self = this;
         this.rpcClient.get_style(self.filepath, function (err) {
             if (err) {
+                // console.log("worskpace:465");
                 self.dispatcher.capture({
                         error: "Python interpreter crashed while loading script.",
                         message:

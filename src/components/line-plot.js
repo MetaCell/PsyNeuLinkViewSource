@@ -31,10 +31,26 @@ class LinePlot extends Plot {
 
     getData(){
         let {id, dataSourceIdToData, dataSourceIdToOwnerId, subplotMetaData, psyNeuLinkIdToName} = this.props;
+
+        // console.log("dataSourceIdToData");
+        let dsitdSize = 0;
+        for (var prop in dataSourceIdToData) {
+            // console.log(prop + ": " + dataSourceIdToData[prop]);
+            dsitdSize++;
+        }
+        // console.log("dataSourceIdToData: " + dataSourceIdToData);
+
         let thisPlotMetaData = subplotMetaData[id];
         let data = [];
         let name, ownerName, color;
+
+        console.log("dataSources.size: " + thisPlotMetaData.dataSources.size);
+        // set size is 0 before any lines to plot are selected
+
         for (const dataSource of thisPlotMetaData.dataSources){
+            
+            console.log("dataSource: " + dataSource);
+            
             name = psyNeuLinkIdToName[dataSource];
             ownerName = psyNeuLinkIdToName[dataSourceIdToOwnerId[dataSource]];
             color = subplotMetaData[id]['dataSourceColors'][dataSource];
@@ -49,6 +65,17 @@ class LinePlot extends Plot {
             let staggeredTimeCounter = {};
 
             for (const datum of dataSourceIdToData[dataSource]){
+                
+                // console.log("datum: " + datum);
+                // for (var key in datum) {
+                //     // if (key === "dataSources") {
+                //     //     for (var s in metaData[id][key]) {
+                //     //         console.log("dataSource: " + s);
+                //     //     }
+                //     // }
+                //     console.log(key + ": " + datum[key]);
+                // }
+                
                 let time = datum.time.split(':');
                 let run = time[0];
                 let trial = time[1];
@@ -79,8 +106,18 @@ class LinePlot extends Plot {
                     staggeredTimeCounter[run][trial][pass][timestep] = 1
                 }
             }
+            console.log("before loop line-plot:103");
 
+            console.log("dataSourceIdToData.size: " + dsitdSize);
+            console.log("dataSourceIdToData[dataSource]: " + dataSourceIdToData[dataSource]);
+            (dataSource in dataSourceIdToData) ? console.log("found") : console.log("not found");
+
+            
+
+            // not entering this loop, not updating datumObj
             for (const datum of dataSourceIdToData[dataSource]){
+                console.log("in datum loop line-plot:119");
+
                 let time = datum.time.split(':');
                 let run = parseInt(time[0]);
                 let trial = parseInt(time[1]);
@@ -93,6 +130,16 @@ class LinePlot extends Plot {
                 });
             }
             data.push(datumObj);
+
+            console.log("datumObj: " + datumObj);
+            for (var key in datumObj) {
+                // if (key === "dataSources") {
+                //     for (var s in metaData[id][key]) {
+                //         console.log("dataSource: " + s);
+                //     }
+                // }
+                console.log(key + ": " + datumObj[key]);
+            }
         }
         return data
     }
@@ -116,6 +163,7 @@ class LinePlot extends Plot {
         let data = this.getData();
         let xAxis = subplotMetaData[id].xAxis;
         let yAxis = subplotMetaData[id].yAxis;
+        console.log("line-plot data: " + data);
         return (
             <div
                 style={{width:width, height:height, color:'black'}}

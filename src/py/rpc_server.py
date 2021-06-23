@@ -25,6 +25,7 @@ if len(sys.argv) > 1:
 
 import sys
 sys.path.append(r'C:\Users\Dillo\PycharmProjects\PsyNeuLink')
+sys.path.append(r'Users/ezinberg/desktop/code/psynl/PsyNeuLink')
 import psyneulink as pnl
 from psyneulink.core.rpc import graph_pb2, graph_pb2_grpc
 
@@ -75,6 +76,7 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
         return graph_pb2.StyleJSON(styleJSON=json.dumps(graphics))
 
     def LoadScript(self, request, context):
+
         filepath = request.path
         loadScript(filepath)
         return graph_pb2.ScriptCompositions(compositions=pnl_container.hashable_pnl_objects['compositions'])
@@ -110,7 +112,13 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
     def HealthCheck(self, request, context):
         return graph_pb2.HealthStatus(status='Okay')
 
+    
+    # Forks thread that runs run_composition. Thread process seems to write to 
+    # pnl_container.shared_queue, which is repeatedly checked below in the while loop.
     def RunComposition(self, request, context):
+
+        # raise ValueError("rpc_server.RunComposition()")
+
         thread = threading.Thread(target=run_composition,
                                   args=[
                                       pnl_container.hashable_pnl_objects['compositions'][-1],
@@ -120,11 +128,22 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
         thread.daemon = True
         thread.start()
         i = 0
+
+        # raise ValueError("rpc_server.RunComposition()")
+
+        print("before while True", file=sys.stderr)
+
         while True:
+
+            print("loop", file=sys.stderr)
+
             if not pnl_container.shared_queue.empty():
                 e =  pnl_container.shared_queue.get()
                 if isinstance(e, graph_pb2.Entry):
                     yield e
+
+                # print(e)
+
             else:
                 if not thread.is_alive():
                     break
@@ -139,6 +158,10 @@ def get_current_composition():
 def handle_serve_prefs(composition, servePrefs):
     # turn on RPC communication for all selected parameters
     comp = get_current_composition()
+
+    print("comp.nodes: " + str(comp.nodes), file=sys.stderr)
+
+
     for servePref in servePrefs.servePrefSet:
         if not servePref.componentName in comp.nodes:
             warnings.warn(f'Component {servePref.componentName} is not in composition {comp.name}. Skipping Component.')
@@ -152,6 +175,9 @@ def handle_serve_prefs(composition, servePrefs):
                                              pnl.LogCondition.__dict__[serve_conditions[servePref.condition]])
 
 def run_composition(composition, inputs, servePrefs):
+
+    # raise ValueError("rpc_server.run_composition()")
+
     formatted_inputs = {}
     handle_serve_prefs(composition, servePrefs)
     con = pnl.Context(
@@ -160,10 +186,21 @@ def run_composition(composition, inputs, servePrefs):
     )
     comp = get_current_composition()
     for key in inputs.keys():
+
+        print("inputs[key]: " + str(inputs[key]), file = sys.stderr)
+
         rows = inputs[key].rows
         cols = inputs[key].cols
         formatted_inputs[comp.nodes[key]] = np.array(inputs[key].data).reshape((rows, cols))
     comp.run(inputs = formatted_inputs, context = con)
+
+    qs = pnl_container.shared_queue.qsize()
+    print("queue size after run: " + str(qs), file=sys.stderr)
+    # for it in range(qs):
+    #     item = pnl_container.shared_queue.get()
+    #     print(item)
+    #     pnl_container.shared_queue.put(item)
+
 
 def get_new_pnl_objects(namespace):
     compositions = {}

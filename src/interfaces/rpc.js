@@ -80,7 +80,9 @@ class RPCInterface{
         client.LoadScript({
             path: filepath
         }, function (err, response) {
+            // log.debug("client.LoadScript");
             if (err) {
+                // log.debug("with err: " + err.stack);
                 callback(err)
             } else {
                 self.script_maintainer.compositions = response.compositions;
@@ -201,16 +203,32 @@ class RPCInterface{
             }
         );
         console.log(formatted_inputs, servePrefs)
+        console.log("calling client.RunComposition()");
         var call = client.RunComposition(
             {
                 inputs: formatted_inputs,
                 servePrefs: {servePrefSet: servePrefs}
             }
         );
+        console.log("before call.on('data')");
+        
+        // console.log("call.next(): " + call.next());
+
         call.on('data', function (entry) {
+            console.log("call.on('data') triggered");
             efs.sendMessage('runData', entry);
             self.got_data = true
         })
+
+        // for (var entry in call) {
+        //     efs.sendMessage('runData', entry);
+        //     self.got_data = true
+        // }
+        // console.log("call:");
+        // for (var entry in call) {
+        //     console.log(entry + ": " + call[entry]);
+        // }
+
 
     }
 }

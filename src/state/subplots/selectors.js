@@ -81,7 +81,19 @@ export const getSubplotMetaData = createSelector(
                     label: yLabel[id],
                     scale: yScale[id]
                 },
+            };
+
+            console.log("metaData[" + id + "]");
+            for (var key in metaData[id]) {
+                if (key === "dataSources") {
+                    console.log("metadata datasources");
+                    for (var s in metaData[id][key]) {
+                        console.log("dataSource: " + s);
+                    }
+                }
+                console.log(key + ": " + metaData[id][key]);
             }
+            
         });
         return metaData
     }

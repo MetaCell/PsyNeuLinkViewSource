@@ -1475,6 +1475,9 @@ class D3model extends React.Component {
             nodes.forEach(
                 (node) => {
                     pnlvNode = self.index.lookup(node);
+
+                    // if (pnlvNode === null) console.log("null node");
+
                     cx =
                         stylesheet['Graph Settings']['Components']['Nodes'][node].x * (viewboxW + wCorrection) / 100
                         + pnlvNode.data.rx
