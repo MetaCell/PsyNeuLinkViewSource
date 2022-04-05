@@ -2,7 +2,12 @@ const path = require('path'),
     os = require('os'),
     fs = require('fs'),
     isWin = os.platform() === 'win32',
-    _ = require('lodash');
+    _ = require('lodash'),
+    clone = require('git-clone'),
+    installation_config = require('./constants');
+
+const download = require('download');
+const https = require('https');
 
 class FileSystemInterface {
     appPath = null;
@@ -78,10 +83,7 @@ class FileSystemInterface {
     getConfigPath(){
         var configFileDir,
             configFilePath;
-        isWin ?
-            configFileDir = path.join(os.homedir(), 'AppData', 'Roaming', 'PsyNeuLinkView')
-            :
-            configFileDir = path.join(os.homedir(), 'Library', 'Preferences', 'PsyNeuLinkView');
+            configFileDir = path.join(os.homedir(), '.PsyNeuLinkView');
         configFilePath = path.join(configFileDir, 'config.json');
         return configFilePath
     }
@@ -108,11 +110,53 @@ class FileSystemInterface {
         return this.appPath ? this.appPath : false
     }
 
+    async downloadFile(url, fileFullPath) {
+        console.info('downloading file from url: '+url)
+        return new Promise((resolve, reject) => {
+            https.get(url, (resp) => {
+                // chunk received from the server
+                resp.on('data', (chunk) => {
+                    fs.appendFileSync(fileFullPath, chunk);
+                });
+                // last chunk received, we are done
+                resp.on('end', () => {
+                    resolve('File downloaded and stored at: '+fileFullPath);
+                });
+            }).on("error", (err) => {
+                reject(new Error(err.message))
+            });
+        })
+    }
+
+    async getPNLRepo() {
+        const destination = path.join(__dirname, "../..", installation_config['psyneulink'], 'pnl.zip');
+        await this.downloadFile(installation_config['pnl_repo'], destination);
+    }
+
+    // getGitRepo() {
+    //     return new Promise(async (resolve, reject) => {
+    //         const cb = async (error) => {
+    //             if (error) {
+    //                 console.error("error downloading repo");
+    //                 reject();
+    //             }
+    //             console.log("Repo downloaded!");
+    //             await resolve({response: 'downloaded!'});
+    //         }
+    //         await clone(installation_config['pnl_repo'], path.join(__dirname, "../..", installation_config['psyneulink']), {checkout: 'devel', shallow: false}, cb)
+    //     });
+    // }
+
+    // async getPsyNeuLink() {
+    //     const test = await this.getGitRepo();
+    //     return test;
+    // }
+
     /**
      * Loads config file from local environment. Makes one if one does not exist. If one does exist, but is missing
      * keys that are present in the config-template file, the missing keys are copied to the local config file.
      */
-    initializeConfig() {
+    async initializeConfig() {
         function keyCopy(templateObj, userObj) {
             Object.keys(templateObj).forEach(
                 (key) => {
@@ -137,10 +181,19 @@ class FileSystemInterface {
             this.setConfig({})
         }
         var config = this.getConfig(),
-            configTemplate = JSON.parse(this.read(path.join(__dirname ,'../resources/config-template.json'))),
+            configTemplate = JSON.parse(this.read(path.join(__dirname, installation_config['config_template']))),
             config = keyCopy(configTemplate, config);
 
-        config["Python"]["PsyNeuLink Path"] = path.join(__dirname, "../../..", "PsyNeuLink");
+        await this.getPNLRepo();
+        // console.log("downloading repo.");
+        // const response = await this.getPsyNeuLink();
+        // console.log("download completed!");
+        // console.log(response);
+            // const cb = (error) => {
+        //     console.log(error);
+        // }
+        // clone(installation_config['pnl_repo'], path.join(__dirname, "../..", installation_config['psyneulink']), {checkout: 'master', shallow: false}, cb)
+        // config["Python"]["PsyNeuLink Path"] = path.join(__dirname, "../../..", "PsyNeuLink");
         
         this.setConfig(config)
     }
