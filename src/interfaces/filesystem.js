@@ -3,19 +3,20 @@ const path = require('path'),
     fs = require('fs'),
     isWin = os.platform() === 'win32',
     _ = require('lodash'),
-    clone = require('git-clone'),
     installation_config = require('./constants');
 
-const download = require('download');
-const https = require('https');
+
+let instance = null;
 
 class FileSystemInterface {
     appPath = null;
 
     constructor() {
         this.filewatchers = {};
-        this.initializeConfig();
+
+        this.initialize = this.initialize.bind(this);
     }
+
 
     /**
      * Adds {array} to watched files containing the file watcher in the 0th index and the un-debounced callback in the 1st index,
@@ -43,6 +44,7 @@ class FileSystemInterface {
         this.filewatchers[filepath] = fs.watch(filepath, _.debounce(callback, 50))
     }
 
+
     /**
      * Synchronously writes content (string or object) to filepath. If content is an object, first JSONifies content,
      * then writes to filepath.
@@ -65,6 +67,7 @@ class FileSystemInterface {
         })
     }
 
+
     /**
      * Synchronously reads a file and returns a copy of its contents.
      *
@@ -77,16 +80,33 @@ class FileSystemInterface {
         return fs.readFileSync(filepath,  {encoding: "utf-8"});
     }
 
+
+    getConfigFolder() {
+        return path.join(os.homedir(), installation_config['config_folder']);
+    }
+
+
+    getDependenciesFolder() {
+        return path.join(this.getConfigFolder(), installation_config['dependencies']);
+    }
+
+
+    getPsyNeuLinkPath() {
+        return path.join(this.getDependenciesFolder(), installation_config['psyneulink'])
+    }
+
+
     /**
      * Returns the system-dependent path of the PsyNeuLinkView config file
      */
     getConfigPath(){
         var configFileDir,
             configFilePath;
-            configFileDir = path.join(os.homedir(), '.PsyNeuLinkView');
+            configFileDir = this.getConfigFolder();
         configFilePath = path.join(configFileDir, 'config.json');
         return configFilePath
     }
+
 
     /**
      * Convenience method that returns an object containing the PsyNeuLinkView config file
@@ -94,6 +114,7 @@ class FileSystemInterface {
     getConfig(){
         return JSON.parse(this.read(this.getConfigPath()));
     }
+
 
     /**
      * Convenience method that writes an object to the PsyNeuLinkView config file
@@ -106,57 +127,17 @@ class FileSystemInterface {
         this.write(this.getConfigPath(), writeToFile);
     }
 
+
     getApplicationPath(){
         return this.appPath ? this.appPath : false
     }
 
-    async downloadFile(url, fileFullPath) {
-        console.info('downloading file from url: '+url)
-        return new Promise((resolve, reject) => {
-            https.get(url, (resp) => {
-                // chunk received from the server
-                resp.on('data', (chunk) => {
-                    fs.appendFileSync(fileFullPath, chunk);
-                });
-                // last chunk received, we are done
-                resp.on('end', () => {
-                    resolve('File downloaded and stored at: '+fileFullPath);
-                });
-            }).on("error", (err) => {
-                reject(new Error(err.message))
-            });
-        })
-    }
-
-    async getPNLRepo() {
-        const destination = path.join(__dirname, "../..", installation_config['psyneulink'], 'pnl.zip');
-        await this.downloadFile(installation_config['pnl_repo'], destination);
-    }
-
-    // getGitRepo() {
-    //     return new Promise(async (resolve, reject) => {
-    //         const cb = async (error) => {
-    //             if (error) {
-    //                 console.error("error downloading repo");
-    //                 reject();
-    //             }
-    //             console.log("Repo downloaded!");
-    //             await resolve({response: 'downloaded!'});
-    //         }
-    //         await clone(installation_config['pnl_repo'], path.join(__dirname, "../..", installation_config['psyneulink']), {checkout: 'devel', shallow: false}, cb)
-    //     });
-    // }
-
-    // async getPsyNeuLink() {
-    //     const test = await this.getGitRepo();
-    //     return test;
-    // }
 
     /**
      * Loads config file from local environment. Makes one if one does not exist. If one does exist, but is missing
      * keys that are present in the config-template file, the missing keys are copied to the local config file.
      */
-    async initializeConfig() {
+    initializeConfig() {
         function keyCopy(templateObj, userObj) {
             Object.keys(templateObj).forEach(
                 (key) => {
@@ -184,19 +165,30 @@ class FileSystemInterface {
             configTemplate = JSON.parse(this.read(path.join(__dirname, installation_config['config_template']))),
             config = keyCopy(configTemplate, config);
 
-        await this.getPNLRepo();
-        // console.log("downloading repo.");
-        // const response = await this.getPsyNeuLink();
-        // console.log("download completed!");
-        // console.log(response);
-            // const cb = (error) => {
-        //     console.log(error);
-        // }
-        // clone(installation_config['pnl_repo'], path.join(__dirname, "../..", installation_config['psyneulink']), {checkout: 'master', shallow: false}, cb)
-        // config["Python"]["PsyNeuLink Path"] = path.join(__dirname, "../../..", "PsyNeuLink");
-        
+        if (!fs.existsSync(this.getPsyNeuLinkPath())) {
+            if (!fs.existsSync(this.getDependenciesFolder())) {
+                fs.mkdirSync(this.getDependenciesFolder());
+            }
+            throw new Error('PsyNeuLink missing in the dependencies folder.')
+        }
+
+        config['Python']['PsyNeuLink Path'] = this.getPsyNeuLinkPath();
         this.setConfig(config)
+    }
+
+    initialize() {
+        console.log('### FileSystem interface initialization ###');
+        this.initializeConfig();
     }
 }
 
-exports.fileSystemInterface = new FileSystemInterface();
+function initFileSystemInterface() {
+    instance = new FileSystemInterface();
+}
+
+exports.getFileSystemInterface = () => {
+    if (instance === null) {
+        initFileSystemInterface();
+    }
+    return instance;
+};

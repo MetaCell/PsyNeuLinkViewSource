@@ -1,9 +1,9 @@
-const fileSystemInterface = require('./filesystem').fileSystemInterface,
-    interpreterInterface = require('./interpreter').interpreterInterface,
-    electronInterface = require('./electron').electronInterface,
-    rpcInterface = require('./rpc').rpcInterface;
+const fileSystemInterface = require('./filesystem').getFileSystemInterface();
+const interpreterInterface = require('./interpreter').getInterpreterInterface();
+const electronInterface = require('./electron').getElectronInterface();
+const rpcInterface = require('./rpc').getRPCInterface();
 
-var interfaces = {
+const interfaces = {
     'filesystem': fileSystemInterface,
     'interpreter': interpreterInterface,
     'electron': electronInterface,

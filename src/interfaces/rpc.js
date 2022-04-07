@@ -4,42 +4,26 @@ const log = require('electron-log'),
     protoloader = require('@grpc/proto-loader'),
     path = require('path'),
     _ = require('lodash'),
-    ifs = require('./filesystem').fileSystemInterface,
-    efs = require('./electron').electronInterface;
+    ifs = require('./filesystem').getFileSystemInterface(),
+    efs = require('./electron').getElectronInterface();
+
+let instance = null;
 
 class RPCInterface{
     constructor() {
-
-        // debugging config bug on other machines
-        console.log("ifs.getConfig() is : " + JSON.stringify(ifs.getConfig(), null, 4));
-        console.log("ifs.getConfig()['Python']['PsyNeuLink Path'] is : " + ifs.getConfig()['Python']['PsyNeuLink Path']);
-
-        const PROTO_PATH = path.join(ifs.getConfig()['Python']['PsyNeuLink Path'], 'psyneulink/core/rpc/graph.proto');
-        this.packageDefinition = protoloader.loadSync(
-            PROTO_PATH,
-            {
-                keepCase: true,
-                longs: String,
-                enums: String,
-                defaults: true,
-                oneofs: true
-            });
-        this.graph_proto = grpc.loadPackageDefinition(this.packageDefinition).graph;
-        this.script_maintainer = {
-            parameters: {},
-            components: {},
-            compositions: {},
-            gv: {},
-            style: {}
-        };
+        this.PROTO_PATH = null;
+        this.packageDefinition = null;
+        this.graph_proto = null;
+        this.script_maintainer = null;
         this.stylesheet_writer = null;
         this.instantiate_client = this.instantiate_client.bind(this);
         this.load_script = this.load_script.bind(this);
         this.get_json = this.get_json.bind(this);
         this.load_custom_pnl = this.load_custom_pnl.bind(this);
-
         this.deepPrintObj = this.deepPrintObj.bind(this);
+        this.initialize = this.initialize.bind(this);
     }
+
 
     instantiate_client() {
         return new this.graph_proto.ServeGraph(
@@ -48,8 +32,8 @@ class RPCInterface{
         );
     }
 
+
     deepPrintObj(obj) {
-        
         for (var prop in obj) {
             if (typeof(obj[prop]) !== "object") {
                 console.log(prop + ": " + obj[prop]);
@@ -58,7 +42,7 @@ class RPCInterface{
                 console.log("printing props of " + prop + ": " + obj[prop])
                 this.deepPrintObj(obj[prop]);
             }
-        } 
+        }
     }
 
     get_parameters(name, callback = function () {}){
@@ -161,7 +145,6 @@ class RPCInterface{
             } else {
 
                 // console.log("\n\n\nBEFORE script_maintainer.gv: " + JSON.stringify(self.script_maintainer.gv, null, 4));
-                
                 self.script_maintainer.gv = JSON.parse(response.objectsJSON);
 
                 // ! script_maintainer.gv does not get updated with newly added node
@@ -267,16 +250,53 @@ class RPCInterface{
 
         call.on('error', function(e) {
             console.log("RPC error: " + e);
-          });
-        
+        });
+
         call.on('status', function(st) {
             // console.log("status: " + st);
         });
 
         call.on('end', function() {
             console.log("RPC stream end");
-        }); 
+        });
     }
+
+    initialize() {
+        console.log('### RPC interface initialization ###');
+        // debugging config bug on other machines
+        console.log("ifs.getConfig() is : " + JSON.stringify(ifs.getConfig(), null, 4));
+        console.log("ifs.getConfig()['Python']['PsyNeuLink Path'] is : " + ifs.getConfig()['Python']['PsyNeuLink Path']);
+
+        this.PROTO_PATH = path.join(ifs.getConfig()['Python']['PsyNeuLink Path'], 'psyneulink/core/rpc/graph.proto');
+        this.packageDefinition = protoloader.loadSync(
+            this.PROTO_PATH,
+            {
+                keepCase: true,
+                longs: String,
+                enums: String,
+                defaults: true,
+                oneofs: true
+            });
+        this.graph_proto = grpc.loadPackageDefinition(this.packageDefinition).graph;
+        this.script_maintainer = {
+            parameters: {},
+            components: {},
+            compositions: {},
+            gv: {},
+            style: {}
+        };
+    }
+
+
 }
 
-exports.rpcInterface = new RPCInterface();
+function initRPCInterface() {
+    instance = new RPCInterface();
+}
+
+exports.getRPCInterface = () => {
+    if (instance === null) {
+        initRPCInterface();
+    }
+    return instance;
+};
