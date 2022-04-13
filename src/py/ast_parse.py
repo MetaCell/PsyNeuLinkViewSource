@@ -60,7 +60,7 @@ class DependencyGraph:
                 self.get_class_hierarchy(subclass, class_hierarchy=class_hierarchy)
         return class_hierarchy
 
-    def execute_node(self, node, namespace):        
+    def execute_node(self, node, namespace):
         try:
             if not node in self.index:
                 self.index[node]= {'executed':False}

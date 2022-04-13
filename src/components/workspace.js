@@ -632,7 +632,6 @@ class WorkSpace extends React.PureComponent {
     /**
      * Gets the currently specified graph style from the loaded script
      */
-    // !
     getCurrentGraphStyle(){
         var self = this;
         this.rpcClient.get_style(self.filepath, function (err) {

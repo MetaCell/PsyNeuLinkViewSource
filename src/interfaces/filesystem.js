@@ -9,9 +9,8 @@ const path = require('path'),
 let instance = null;
 
 class FileSystemInterface {
-    appPath = null;
-
     constructor() {
+        this.appPath = null;
         this.filewatchers = {};
 
         this.initialize = this.initialize.bind(this);

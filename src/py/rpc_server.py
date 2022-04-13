@@ -84,7 +84,6 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
         return graph_pb2.StyleJSON(styleJSON=json.dumps(graphics))
 
     def LoadScript(self, request, context):
-
         filepath = request.path
         loadScript(filepath)
         return graph_pb2.ScriptCompositions(compositions=pnl_container.hashable_pnl_objects['compositions'])
@@ -110,7 +109,7 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
         gv = get_gv_json(graph_name)
         graphics = pnl_container.graphics_spec
         return graph_pb2.GraphJSON(objectsJSON=json.dumps(gv),
-                                   styleJSON=json.dumps(graphics))
+                                    styleJSON=json.dumps(graphics))
 
     def UpdateStylesheet(self, request_iterator, context):
         for request in request_iterator:
@@ -120,17 +119,16 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
     def HealthCheck(self, request, context):
         return graph_pb2.HealthStatus(status='Okay')
 
-    
-    # Forks thread that runs run_composition. Thread writes to 
+
+    # Forks thread that runs run_composition. Thread writes to
     # pnl_container.shared_queue, which is repeatedly checked below in the while loop.
     def RunComposition(self, request, context):
-
         thread = threading.Thread(target=run_composition,
-                                  args=[
-                                      pnl_container.hashable_pnl_objects['compositions'][-1],
-                                      request.inputs,
-                                      request.servePrefs
-                                  ])
+                                    args=[
+                                        pnl_container.hashable_pnl_objects['compositions'][-1],
+                                        request.inputs,
+                                        request.servePrefs
+                                    ])
         thread.daemon = True
         thread.start()
 
@@ -171,7 +169,7 @@ def handle_serve_prefs(composition, servePrefs):
                     f'Parameter {servePref.parameterName} is not a loggable item of {node.name}. Skipping Parameter.')
             else:
                 node.set_delivery_conditions(servePref.parameterName,
-                                             pnl.LogCondition.__dict__[serve_conditions[servePref.condition]])
+                                                pnl.LogCondition.__dict__[serve_conditions[servePref.condition]])
 
 def run_composition(composition, inputs, servePrefs):
     formatted_inputs = {}
@@ -198,12 +196,13 @@ def get_new_pnl_objects(namespace):
     pnl_container.pnl_objects['components'].update(components)
     return compositions, components
 
+
 def get_graphics_dict(namespace):
     if 'pnlv_graphics_spec' in namespace:
         pnl_container.graphics_spec = namespace['pnlv_graphics_spec']
 
-def load_style(filepath):
 
+def load_style(filepath):
     filepath = expand_path(filepath)
 
     with open(filepath, 'r') as fi:
@@ -220,8 +219,8 @@ def load_style(filepath):
     else:
         pnl_container.graphics_spec = {}
 
-def loadScript(filepath):
 
+def loadScript(filepath):
     filepath = expand_path(filepath)
 
     pnl_container.filepath = filepath
@@ -257,12 +256,12 @@ def loadScript(filepath):
     get_graphics_dict(namespace)
     return pnl_container.hashable_pnl_objects['compositions']
 
-def update_graphics_dict(styleSheet):
 
+def update_graphics_dict(styleSheet):
     # reads the file immediately before updating script
-    # so that the AST written back to the script includes any 
+    # so that the AST written back to the script includes any
     # changes made since the script was read on start
-    
+
     # filepath = pnl_container.filepath
     # try:
     #     with open(filepath, 'r') as f:
@@ -276,13 +275,11 @@ def update_graphics_dict(styleSheet):
     #             print_to_file("Source file for AST is empty or has already been read")
     #         if pnl_container.AST == None:
     #             print_to_file("pnl_container.AST is None")
-    
+
     # except:
     #     e = sys.exc_info()[0]
     #     print_to_file("error reading ast from file: " + str(e))
     #     print_to_file("filepath: " + filepath + '\n')
-
-
 
     ast = redbaron.RedBaron(pnl_container.AST)
     gdict = ast.find('assign',lambda x: x.find('name','pnlv_graphics_spec'))
@@ -292,7 +289,7 @@ def update_graphics_dict(styleSheet):
         ast = ast.dumps()
     else:
         ast = ast.dumps() + f'\n# PsyNeuLinkView Graphics Info \npnlv_graphics_spec = {stylesheet_str}\n'
-    
+
     old_ast = copy.deepcopy(pnl_container.AST)
 
     # if str(old_ast) == str(ast):
@@ -307,6 +304,7 @@ def update_graphics_dict(styleSheet):
 
     with open(pnl_container.filepath, 'w') as script:
         script.write(ast)
+
 
 def get_gv_json(name):
     def etree_to_dict(t):
@@ -324,10 +322,11 @@ def get_gv_json(name):
             text = t.text.strip()
             if children or t.attrib:
                 if text:
-                  d[t.tag]['#text'] = text
+                    d[t.tag]['#text'] = text
             else:
                 d[t.tag] = text
         return d
+
 
     def correct_dict(svg_dict):
         for i in list(svg_dict.keys()):
@@ -343,6 +342,7 @@ def get_gv_json(name):
             elif '@' == i[0]:
                 svg_dict[i[1:]] = svg_dict[i]
                 del svg_dict[i]
+
 
     def parse_corrected_dict(corrected_dict):
         objects = []
@@ -375,7 +375,7 @@ def get_gv_json(name):
                                                                     show_learning=True,
                                                                     show_controller=True
                                                                     )
-   
+
     gv_all = pnl_container.pnl_objects['compositions'][comp].show_graph(output_fmt='gv',
                                                                     show_learning=True,
                                                                     show_controller=True,
@@ -388,9 +388,8 @@ def get_gv_json(name):
 
 
     gv_svg_dict = etree_to_dict(fromstring(gv_svg.decode()))
-    
+
     gv_all_svg_dict = etree_to_dict(fromstring(gv_all_svg.decode()))
-    
 
     correct_dict(gv_svg_dict)
     print_to_file("gv_svg_dict\n\n" + json.dumps(gv_svg_dict, indent=4) + "\n\n")
@@ -399,14 +398,12 @@ def get_gv_json(name):
     print_to_file("gv_all_svg_dict\n\n" + json.dumps(gv_all_svg_dict, indent=4))
 
 
-    gv_d = parse_corrected_dict(gv_svg_dict)
-
-    # gv_d = parse_corrected_dict(gv_all_svg_dict)
+    # gv_d = parse_corrected_dict(gv_svg_dict)
+    gv_d = parse_corrected_dict(gv_all_svg_dict)
 
     gv_d['maxX'] = float(gv_svg_dict['svg']['width'].replace('pt',''))
     gv_d['maxY'] = float(gv_svg_dict['svg']['height'].replace('pt', ''))
     return gv_d
-
 
 
 def serve():
