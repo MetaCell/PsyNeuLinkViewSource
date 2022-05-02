@@ -8,9 +8,9 @@ import {store} from "../state/store";
 import {DragSource, useDrag, DragPreviewImage, DropTarget} from 'react-dnd';
 import { ItemTypes } from './constants';
 import DraggableTreeNode from "./tree-node";
-import { getEmptyImage } from 'react-dnd-html5-backend'
-import {Select, List, Typography, Avatar, Button} from "antd";
-import {PlusOutlined} from '@ant-design/icons'
+import {Select, List, Typography} from "antd";
+import {getProcessingMechanismParams} from "../utility/functions";
+import {addProcessingMechanism} from "../services/mechanismsService";
 
 const mapStateToProps = ({core}) => {
   return {
@@ -230,7 +230,7 @@ const structureDataNew = [
         //         id={0}
         //         label={'Control Mechanism'}/>
         //     </div>,
-        icon: 'square'
+        icon: 'square',
       },
       {
         id: 1,
@@ -296,7 +296,8 @@ const structureDataNew = [
       {
         id: 9,
         label: 'Processing Mechanism',
-        icon: 'square'
+        icon: 'square',
+        onClick: () => addProcessingMechanism(getProcessingMechanismParams("ProcessingMechanism", "Test", "Linear"))
       },
       {
         id: 10,
@@ -425,6 +426,7 @@ class SideBar extends React.Component {
                                 marginBottom:'7px',
                                 cursor:'pointer'
                               }}
+                              onClick={component.onClick ? () => component.onClick() : null}
                           />)}
                     </List.Item>
                 )}

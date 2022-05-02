@@ -11,6 +11,7 @@ service ServeGraph {
     rpc HealthCheck (NullArgument) returns (HealthStatus) {}
     rpc UpdateStylesheet (stream StyleJSON) returns (NullArgument) {}
     rpc RunComposition (RunTimeParams) returns (stream Entry) {}
+    rpc AddComponent (ComponentParams) returns (ScriptCompositions) {}
 }
 
 message NullArgument {
@@ -90,4 +91,21 @@ message ServePrefs {
 message RunTimeParams {
     map<string, Matrix> inputs = 1;
     ServePrefs servePrefs = 2;
+}
+
+enum paramTypes {
+    STRING = 0;
+    NUMBER = 1;
+    FUNCTION = 2;
+}
+
+message ComponentMeta {
+    string key = 1;
+    string value = 2;
+    paramTypes type = 3;
+}
+
+message ComponentParams {
+    string apiMethod = 1;
+    repeated ComponentMeta params = 2;
 }

@@ -141,6 +141,9 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
                 if not thread.is_alive():
                     break
 
+    def AddComponent(self, request, context):
+        print("Test")
+
 pnl_container = Container()
 
 def expand_path(filepath):
