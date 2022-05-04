@@ -297,7 +297,7 @@ const structureDataNew = [
         id: 9,
         label: 'Processing Mechanism',
         icon: 'square',
-        onClick: () => addProcessingMechanism(getProcessingMechanismParams("ProcessingMechanism", "Test", "Linear"))
+        onClick: () => addProcessingMechanism(getProcessingMechanismParams("ProcessingMechanism", "test", "Linear"))
       },
       {
         id: 10,

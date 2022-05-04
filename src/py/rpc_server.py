@@ -13,6 +13,9 @@ import threading
 import warnings
 import copy
 
+from src.py.components_factory.concrete_creator_factory import get_concrete_creator
+from src.py.exceptions.custom_exceptions import ParamValueNotAllowedError, RequiredParamsMissingError, \
+    ParamAttributesMissingError
 
 f = None
 
@@ -142,7 +145,17 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
                     break
 
     def AddComponent(self, request, context):
-        print("Test")
+        try:
+            concrete_creator = get_concrete_creator(request.apiMethod)
+        except KeyError:
+            # TODO: Handle unknown component id
+            return
+        try:
+            instruction = concrete_creator.get_instruction_string(request.params)
+        except (ParamValueNotAllowedError, RequiredParamsMissingError, ParamAttributesMissingError):
+            # TODO: Handle bad request
+            return
+        print(instruction)
 
 pnl_container = Container()
 
