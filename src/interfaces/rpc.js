@@ -19,6 +19,7 @@ class RPCInterface{
         this.instantiate_client = this.instantiate_client.bind(this);
         this.load_script = this.load_script.bind(this);
         this.add_component = this.add_component.bind(this);
+        this.get_components = this.get_components.bind(this);
         this.get_json = this.get_json.bind(this);
         this.load_custom_pnl = this.load_custom_pnl.bind(this);
         this.deepPrintObj = this.deepPrintObj.bind(this);
