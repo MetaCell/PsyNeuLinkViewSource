@@ -2,15 +2,14 @@ from queue import Queue
 import threading
 import psyneulink as pnl
 
+
 class Container:
     def __init__(self):
         self.pnl_objects = {
             'compositions': {},
             'components': {}
         }
-        self.graphics_spec = {
-
-        }
+        self.graphics_spec = {}
         self.filepath = None
         self.AST = None
         self.shared_queue = Queue()

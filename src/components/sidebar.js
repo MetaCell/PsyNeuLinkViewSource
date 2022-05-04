@@ -10,7 +10,7 @@ import { ItemTypes } from './constants';
 import DraggableTreeNode from "./tree-node";
 import {Select, List, Typography} from "antd";
 import {getProcessingMechanismParams} from "../utility/functions";
-import {addProcessingMechanism} from "../services/mechanismsService";
+import {addComponent} from "../services/rpcService";
 
 const mapStateToProps = ({core}) => {
   return {
@@ -297,7 +297,7 @@ const structureDataNew = [
         id: 9,
         label: 'Processing Mechanism',
         icon: 'square',
-        onClick: () => addProcessingMechanism(getProcessingMechanismParams("ProcessingMechanism", "test", "Linear"))
+        onClick: (callback) => addComponent(getProcessingMechanismParams("ProcessingMechanism", "test", "Linear"), callback)
       },
       {
         id: 10,
@@ -351,6 +351,14 @@ class SideBar extends React.Component {
   }
 
   componentDidUpdate() {
+  }
+
+  addComponentCallback(err){
+      if (err) {
+        console.error(err)
+      } else {
+        this.props.setStateFromRpcClient()
+      }
   }
 
   render() {
@@ -426,7 +434,7 @@ class SideBar extends React.Component {
                                 marginBottom:'7px',
                                 cursor:'pointer'
                               }}
-                              onClick={component.onClick ? () => component.onClick() : null}
+                              onClick={component.onClick ? () => component.onClick((err) => this.addComponentCallback(err)) : null}
                           />)}
                     </List.Item>
                 )}

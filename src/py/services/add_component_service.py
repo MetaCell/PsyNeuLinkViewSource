@@ -3,6 +3,7 @@ from src.py.components_factory.concrete_creator_factory import get_concrete_crea
 from src.py.exceptions.custom_exceptions import ParamValueNotAllowedError, RequiredParamsMissingError, \
     ParamAttributesMissingError
 from src.py.models.container import Container
+from psyneulink.core.rpc import graph_pb2
 
 
 def add_component(instruction: str, dg: DependencyGraph, model: Container):
@@ -11,7 +12,7 @@ def add_component(instruction: str, dg: DependencyGraph, model: Container):
     model.add_new_instruction(instruction, dg.get_namespace())
 
 
-def get_instruction(api_method: str, params, ):
+def get_instruction(api_method: str, params: graph_pb2.ComponentParams):
     try:
         concrete_creator = get_concrete_creator(api_method)
     except KeyError:

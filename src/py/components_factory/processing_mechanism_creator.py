@@ -1,15 +1,16 @@
+from psyneulink.core.rpc import graph_pb2
 from src.py.components_factory.params_validator import validate_params
 from src.py.components_factory.python_instruction_creator import IPythonInstructionCreator
 from src.py.helpers import template_to_str
 
 
-def construct_name_str(params):
+def construct_name_str(params: graph_pb2.ComponentParams):
     for param in params:
         if param.key == 'name':
             return param.value
 
 
-def construct_function_str(params):
+def construct_function_str(params: graph_pb2.ComponentParams):
     function = next(p for p in params if p.key == 'function')
     if not function:
         return None
@@ -43,7 +44,7 @@ class ProcessingMechanismCreator(IPythonInstructionCreator):
         'function': construct_function_str
     }
 
-    def get_instruction_string(self, params) -> str:
+    def get_instruction_string(self, params: graph_pb2.ComponentParams) -> str:
         validate_params(ProcessingMechanismCreator.allowed_params, params)
         provided_params = set([param.key for param in params if '.' not in param.key])
         template_values = {pp: ProcessingMechanismCreator.action_map[pp](params) for pp in provided_params}

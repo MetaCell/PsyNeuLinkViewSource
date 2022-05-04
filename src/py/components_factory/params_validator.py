@@ -1,10 +1,10 @@
 from typing import Dict
-
+from psyneulink.core.rpc import graph_pb2
 from src.py.exceptions.custom_exceptions import ParamAttributesMissingError, RequiredParamsMissingError, \
     ParamValueNotAllowedError
 
 
-def validate_params(allowed: Dict, provided):
+def validate_params(allowed: Dict, provided: graph_pb2.ComponentParams):
     # Validates provided params structure
     if any(k not in dir(param) for k in ('key', 'value', 'type') for param in provided):
         raise ParamAttributesMissingError

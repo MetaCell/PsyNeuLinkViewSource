@@ -131,7 +131,7 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
         instruction = get_instruction(request.apiMethod, request.params)
         add_component(instruction, dg, pnl_container)
         append_line(pnl_container.filepath, instruction)
-        return pnl_container.hashable_pnl_objects['compositions']
+        return graph_pb2.ScriptCompositions(compositions=pnl_container.pnl_objects['compositions'])
 
 
 def expand_path(filepath):
@@ -200,8 +200,10 @@ def load_style(filepath):
 
 
 def loadScript(filepath):
-    filepath = expand_path(filepath)
+    global pnl_container
+    pnl_container = Container()
 
+    filepath = expand_path(filepath)
     pnl_container.filepath = filepath
 
     try:
