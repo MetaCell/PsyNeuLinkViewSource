@@ -1,4 +1,3 @@
-from queue import Queue
 import numpy as np
 import grpc
 from concurrent import futures
@@ -13,9 +12,10 @@ import threading
 import warnings
 import copy
 
-from src.py.components_factory.concrete_creator_factory import get_concrete_creator
-from src.py.exceptions.custom_exceptions import ParamValueNotAllowedError, RequiredParamsMissingError, \
-    ParamAttributesMissingError
+from src.py.exceptions.custom_exceptions import ScriptNotLoadedError
+from src.py.models.container import Container
+from src.py.services.add_component_service import get_instruction, add_component
+from src.py.services.filesystem import append_line
 
 f = None
 
@@ -41,38 +41,20 @@ def print_to_file(text):
 
 
 serve_conditions = {
-    0:'INITIALIZATION',
-    1:'VALIDATION',
-    2:'EXECUTION',
-    3:'PROCESSING',
-    4:'LEARNING',
-    5:'CONTROL',
-    6:'SIMULATION',
-    7:'TRIAL',
-    8:'RUN'
+    0: 'INITIALIZATION',
+    1: 'VALIDATION',
+    2: 'EXECUTION',
+    3: 'PROCESSING',
+    4: 'LEARNING',
+    5: 'CONTROL',
+    6: 'SIMULATION',
+    7: 'TRIAL',
+    8: 'RUN'
 }
 
-class Container():
-    def __init__(self):
-        self.localvars = locals()
-        self.pnl_objects = {
-            'compositions': {},
-            'components': {}
-        }
-        self.graphics_spec = {
+pnl_container = Container()
+dg = None
 
-        }
-        self.filepath = None
-        self.AST = None
-        self.shared_queue = Queue()
-        self.shared_queue_lock = threading.RLock()
-
-    @property
-    def hashable_pnl_objects(self):
-        return {
-            'compositions': [i for i in self.pnl_objects['compositions']],
-            'components': [i for i in self.pnl_objects['components']]
-        }
 
 class GraphServer(graph_pb2_grpc.ServeGraphServicer):
     def LoadCustomPnl(self, request, context):
@@ -104,7 +86,7 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
         name = request.name
         parameter_list = list(pnl_container.pnl_objects['components'][name].loggable_items.keys())
         return graph_pb2.ParameterList(
-            parameters = parameter_list
+            parameters=parameter_list
         )
 
     def GetJSON(self, request, context):
@@ -112,7 +94,7 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
         gv = get_gv_json(graph_name)
         graphics = pnl_container.graphics_spec
         return graph_pb2.GraphJSON(objectsJSON=json.dumps(gv),
-                                    styleJSON=json.dumps(graphics))
+                                   styleJSON=json.dumps(graphics))
 
     def UpdateStylesheet(self, request_iterator, context):
         for request in request_iterator:
@@ -122,22 +104,21 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
     def HealthCheck(self, request, context):
         return graph_pb2.HealthStatus(status='Okay')
 
-
     # Forks thread that runs run_composition. Thread writes to
     # pnl_container.shared_queue, which is repeatedly checked below in the while loop.
     def RunComposition(self, request, context):
         thread = threading.Thread(target=run_composition,
-                                    args=[
-                                        pnl_container.hashable_pnl_objects['compositions'][-1],
-                                        request.inputs,
-                                        request.servePrefs
-                                    ])
+                                  args=[
+                                      pnl_container.hashable_pnl_objects['compositions'][-1],
+                                      request.inputs,
+                                      request.servePrefs
+                                  ])
         thread.daemon = True
         thread.start()
 
         while True:
             if not pnl_container.shared_queue.empty():
-                e =  pnl_container.shared_queue.get()
+                e = pnl_container.shared_queue.get()
                 if isinstance(e, graph_pb2.Entry):
                     yield e
             else:
@@ -145,19 +126,13 @@ class GraphServer(graph_pb2_grpc.ServeGraphServicer):
                     break
 
     def AddComponent(self, request, context):
-        try:
-            concrete_creator = get_concrete_creator(request.apiMethod)
-        except KeyError:
-            # TODO: Handle unknown component id
-            return
-        try:
-            instruction = concrete_creator.get_instruction_string(request.params)
-        except (ParamValueNotAllowedError, RequiredParamsMissingError, ParamAttributesMissingError):
-            # TODO: Handle bad request
-            return
-        print(instruction)
+        if not dg:
+            raise ScriptNotLoadedError
+        instruction = get_instruction(request.apiMethod, request.params)
+        add_component(instruction, dg, pnl_container)
+        append_line(pnl_container.filepath, instruction)
+        return pnl_container.hashable_pnl_objects['compositions']
 
-pnl_container = Container()
 
 def expand_path(filepath):
     if '~' in filepath:
@@ -166,10 +141,12 @@ def expand_path(filepath):
         # print_to_file("filepath expanded to: " + filepath)
     return filepath
 
+
 def get_current_composition():
     # gets currently selected composition. currently just takes the last one in the list of instantiated comps.
     # needs to be improved
     return list(pnl_container.pnl_objects['compositions'].values())[-1]
+
 
 def handle_serve_prefs(composition, servePrefs):
     # turn on RPC communication for all selected parameters
@@ -177,7 +154,8 @@ def handle_serve_prefs(composition, servePrefs):
 
     for servePref in servePrefs.servePrefSet:
         if not servePref.componentName in comp.nodes:
-            warnings.warn(f'Component {servePref.componentName} is not in composition {comp.name} with nodes {comp.nodes}. Skipping Component.')
+            warnings.warn(
+                f'Component {servePref.componentName} is not in composition {comp.name} with nodes {comp.nodes}. Skipping Component.')
         else:
             node = comp.nodes[servePref.componentName]
             if not servePref.parameterName in node.loggable_items:
@@ -185,37 +163,22 @@ def handle_serve_prefs(composition, servePrefs):
                     f'Parameter {servePref.parameterName} is not a loggable item of {node.name}. Skipping Parameter.')
             else:
                 node.set_delivery_conditions(servePref.parameterName,
-                                                pnl.LogCondition.__dict__[serve_conditions[servePref.condition]])
+                                             pnl.LogCondition.__dict__[serve_conditions[servePref.condition]])
+
 
 def run_composition(composition, inputs, servePrefs):
     formatted_inputs = {}
     handle_serve_prefs(composition, servePrefs)
     con = pnl.Context(
-        execution_id = None,
-        rpc_pipeline = pnl_container.shared_queue
+        execution_id=None,
+        rpc_pipeline=pnl_container.shared_queue
     )
     comp = get_current_composition()
     for key in inputs.keys():
         rows = inputs[key].rows
         cols = inputs[key].cols
         formatted_inputs[comp.nodes[key]] = np.array(inputs[key].data).reshape((rows, cols))
-    comp.run(inputs = formatted_inputs, context = con)
-
-
-def get_new_pnl_objects(namespace):
-    compositions = {}
-    for cat in pnl.CompositionRegistry:
-        for comp_name in pnl.CompositionRegistry[cat][1]:
-            compositions.update({comp_name:pnl.CompositionRegistry[cat][1][comp_name]})
-    components = {i.name: i for i in namespace.values() if isinstance(i, pnl.Mechanism)}
-    pnl_container.pnl_objects['compositions'].update(compositions)
-    pnl_container.pnl_objects['components'].update(components)
-    return compositions, components
-
-
-def get_graphics_dict(namespace):
-    if 'pnlv_graphics_spec' in namespace:
-        pnl_container.graphics_spec = namespace['pnlv_graphics_spec']
+    comp.run(inputs=formatted_inputs, context=con)
 
 
 def load_style(filepath):
@@ -227,7 +190,7 @@ def load_style(filepath):
 
     # file = open(filepath, 'r').read()
     ast = redbaron.RedBaron(file)
-    gdict = ast.find('assign',lambda x: x.find('name','pnlv_graphics_spec'))
+    gdict = ast.find('assign', lambda x: x.find('name', 'pnlv_graphics_spec'))
     namespace = {}
     if gdict:
         exec(gdict.dumps(), namespace)
@@ -253,23 +216,21 @@ def loadScript(filepath):
             #     print_to_file("Source file for AST is empty or has already been read")
             # if pnl_container.AST == None:
             #     print_to_file("pnl_container.AST is None")
-    
+
     except:
         e = sys.exc_info()[0]
         print_to_file("error reading ast from file: " + str(e))
         print_to_file("filepath: " + filepath + '\n')
 
+    global dg
     dg = ast_parse.DependencyGraph(pnl_container.AST, pnl)
-    namespace = {}
-    dg.execute_ast(namespace)
+    dg.execute_ast()
 
+    pnl_container.update(dg.get_namespace())
     # print_to_file(namespace)
-
-    get_new_pnl_objects(namespace)
     # (composition, components) = get_new_pnl_objects(namespace)
     # print_to_file(str(composition) + "  " + str(components))
 
-    get_graphics_dict(namespace)
     return pnl_container.hashable_pnl_objects['compositions']
 
 
@@ -298,7 +259,7 @@ def update_graphics_dict(styleSheet):
     #     print_to_file("filepath: " + filepath + '\n')
 
     ast = redbaron.RedBaron(pnl_container.AST)
-    gdict = ast.find('assign',lambda x: x.find('name','pnlv_graphics_spec'))
+    gdict = ast.find('assign', lambda x: x.find('name', 'pnlv_graphics_spec'))
     stylesheet_str = json.dumps(styleSheet, indent=4)
     if gdict:
         gdict.value = stylesheet_str
@@ -331,7 +292,7 @@ def get_gv_json(name):
             for dc in map(etree_to_dict, children):
                 for k, v in dc.items():
                     dd[k].append(v)
-            d = {t.tag: {k:v[0] if len(v) == 1 else v for k, v in dd.items()}}
+            d = {t.tag: {k: v[0] if len(v) == 1 else v for k, v in dd.items()}}
         if t.attrib:
             d[t.tag].update(('@' + k, v) for k, v in t.attrib.items())
         if t.text:
@@ -342,7 +303,6 @@ def get_gv_json(name):
             else:
                 d[t.tag] = text
         return d
-
 
     def correct_dict(svg_dict):
         for i in list(svg_dict.keys()):
@@ -358,7 +318,6 @@ def get_gv_json(name):
             elif '@' == i[0]:
                 svg_dict[i[1:]] = svg_dict[i]
                 del svg_dict[i]
-
 
     def parse_corrected_dict(corrected_dict):
         objects = []
@@ -381,8 +340,8 @@ def get_gv_json(name):
 
                 edges.append(i)
         return {
-            'objects':objects,
-            'edges':edges
+            'objects': objects,
+            'edges': edges
         }
 
     comp = name
@@ -393,15 +352,14 @@ def get_gv_json(name):
                                                                     )
 
     gv_all = pnl_container.pnl_objects['compositions'][comp].show_graph(output_fmt='gv',
-                                                                    show_learning=True,
-                                                                    show_controller=True,
-                                                                    show_node_structure='ALL'
-                                                                    )
+                                                                        show_learning=True,
+                                                                        show_controller=True,
+                                                                        show_node_structure='ALL'
+                                                                        )
 
     gv_svg = gv.pipe(format='svg')
 
     gv_all_svg = gv_all.pipe(format='svg')
-
 
     gv_svg_dict = etree_to_dict(fromstring(gv_svg.decode()))
 
@@ -413,11 +371,10 @@ def get_gv_json(name):
     correct_dict(gv_all_svg_dict)
     print_to_file("gv_all_svg_dict\n\n" + json.dumps(gv_all_svg_dict, indent=4))
 
-
     gv_d = parse_corrected_dict(gv_svg_dict)
     # gv_d = parse_corrected_dict(gv_all_svg_dict)
 
-    gv_d['maxX'] = float(gv_svg_dict['svg']['width'].replace('pt',''))
+    gv_d['maxX'] = float(gv_svg_dict['svg']['width'].replace('pt', ''))
     gv_d['maxY'] = float(gv_svg_dict['svg']['height'].replace('pt', ''))
     return gv_d
 

@@ -8,3 +8,7 @@ class RequiredParamsMissingError(Exception):
 
 class ParamValueNotAllowedError(Exception):
     pass
+
+
+class ScriptNotLoadedError(Exception):
+    pass
