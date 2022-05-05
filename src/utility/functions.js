@@ -1,10 +1,11 @@
-export const getProcessingMechanismParams = (id, name, func) => {
+export const getProcessingMechanismParams = (id, name, func, slope) => {
     return {
         apiMethod: id,
         params: [
             {
                 key: 'name',
                 value: name,
+                // Todo: Try to use graph.proto enum (check rpc.js this.graph_proto)
                 type: 0
             },
             {
@@ -14,7 +15,7 @@ export const getProcessingMechanismParams = (id, name, func) => {
             },
             {
                 key: "function.slope",
-                value: 2,
+                value: slope,
                 type: 1
             }
         ]

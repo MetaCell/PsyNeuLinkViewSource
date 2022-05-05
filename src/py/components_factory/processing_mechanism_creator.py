@@ -36,7 +36,7 @@ class ProcessingMechanismCreator(IPythonInstructionCreator):
                                'GaussianDistort', 'SoftMax', 'LinearMatrix', 'TransferWithCosts'}
         },
     }
-
+    # Todo: str_template needs be built dynamically
     str_template = "{name} = pnl.ProcessingMechanism(name='{name}', function=pnl.{function})"
 
     action_map = {
