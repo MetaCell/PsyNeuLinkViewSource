@@ -41,7 +41,8 @@
     "recharts": "^1.8.5",
     "redux": "^4.0.5",
     "redux-form": "^8.3.6",
-    "reselect": "^4.0.0"
+    "reselect": "^4.0.0",
+    "viz.js": "^2.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

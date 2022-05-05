@@ -9,13 +9,20 @@ import {connect} from "react-redux";
 import {store} from "../state/store";
 import {setModelAspectRatio, setStyleSheet} from "../state/core/actions";
 
+import Viz from 'viz.js';
+import { Module, render } from 'viz.js/full.render.js';
+
+
+let viz = new Viz({ Module, render });
+
 const util = require("util");
 
 const mapStateToProps = ({core}) => {
     return {
         graphStyle: core.stylesheet,
         styleSheet: core.stylesheet,
-        aspectRatio: core.modelAspectRatio
+        aspectRatio: core.modelAspectRatio,
+        metadataVisualization: core.metadataVisualization,
     }
 };
 
@@ -66,19 +73,21 @@ class D3model extends React.Component {
             updateLocations: false
         };
         this.nodes = [];
+        this.elementRendered = undefined;
     }
 
     debounceFunctions(){
         this.updateScript = _.debounce(this.updateScript, 100)
         this.setDirtyFlagToFalse = _.debounce(this.setDirtyFlagToFalse, 200)
         this.onResize = _.debounce(this.onResize, 100)
-
-        // this.props.checkScriptCallback = _.debounce(this.props.checkScriptCallback, 100);
     }
 
-    // lifecycle methods
 
+    // lifecycle methods
     componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.metadataVisualization !== prevProps.metadataVisualization) {
+            this.renderGraph();
+        }
         if (!(this.props.graph === prevProps.graph)) {
             if (this.props.graph === "loading") {
                 d3.selectAll('svg').remove();
@@ -87,11 +96,8 @@ class D3model extends React.Component {
                 d3.selectAll('svg').remove();
                 this.setState({"spinnerVisible": false});
                 this.stylesheet = null;
-
-                // ! first attempt at fixing node changing bug
-                // this.props.graph = this.props.checkScriptCallback();
-
-                this.setGraph();
+                // this.setGraph();
+                this.renderGraph();
             }
         }
         var sizeUpdated = (!_.isEqual(this.props.size, prevProps.size) && this.svg);
@@ -140,13 +146,33 @@ class D3model extends React.Component {
                 d3.selectAll('svg').remove();
                 this.setState({"spinnerVisible": false});
                 this.stylesheet = null;
-
-                // this.props.checkScriptCallback();
-
-                this.setGraph();
+                // this.setGraph();
+                this.renderGraph();
             }
         }
         this.efferentCopies = [];
+    }
+
+    renderGraph() {
+        var self = this;
+        if (this.elementRendered !== undefined) {
+            this.elementRendered.remove();
+        }
+        if (this.props.metadataVisualization) {
+            viz.renderSVGElement(this.props.graph.dot_format.metadata)
+            .then(function(element) {
+                self.elementRendered = element;
+                var anchor = document.getElementsByClassName("graph-view")[0];
+                anchor.appendChild(element);
+            });
+        } else {
+            viz.renderSVGElement(this.props.graph.dot_format.simple)
+            .then(function(element) {
+                self.elementRendered = element;
+                var anchor = document.getElementsByClassName("graph-view")[0];
+                anchor.appendChild(element);
+            });
+        }
     }
 
     mouseMove(e) {
@@ -201,6 +227,7 @@ class D3model extends React.Component {
         this.associateVisualInformationWithGraphNodes = this.associateVisualInformationWithGraphNodes.bind(this);
         this.isObject = this.isObject.bind(this);
         this.linkObjectToProps = this.linkObjectToProps.bind(this);
+        this.renderGraph = this.renderGraph.bind(this);
     }
     
     commitToStylesheetAndUpdateScript(callback = () => {

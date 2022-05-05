@@ -1,22 +1,25 @@
 import * as React from 'react'
-import { Classes, Tree, Icon } from '@blueprintjs/core'
+import { Classes, Icon } from '@blueprintjs/core'
 import '../css/sidebar.css'
 import { Resizable } from "re-resizable"
 import {connect} from "react-redux";
-import {setActiveView, setStyleSheet} from "../state/core/actions";
-import {store} from "../state/store";
-import {DragSource, useDrag, DragPreviewImage, DropTarget} from 'react-dnd';
+import {DropTarget} from 'react-dnd';
 import { ItemTypes } from './constants';
 import DraggableTreeNode from "./tree-node";
-import { getEmptyImage } from 'react-dnd-html5-backend'
-import {Select, List, Typography, Avatar, Button} from "antd";
-import {PlusOutlined} from '@ant-design/icons'
+import {Select, List, Typography} from "antd";
+import { CHANGE_VISUALIZATION } from '../state/core/actionTypes';
 
 const mapStateToProps = ({core}) => {
   return {
     activeView: core.activeView,
   }
 };
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    changeVisualization: () => dispatch({type: CHANGE_VISUALIZATION}),
+  }
+}
 
 const {Text} = Typography;
 
@@ -191,32 +194,6 @@ const structureDataOld = [
 
 
 const structureDataNew = [
-  // {
-  //   categoryName: 'Processing',
-  //   components: [
-  //     {
-  //       id: 0,
-  //       label: 'Control Mechanism',
-  //       // label:
-  //       //   <div>
-  //       //       <DraggableTreeNode
-  //       //         id={0}
-  //       //         label={'Control Mechanism'}/>
-  //       //     </div>,
-  //       icon: 'square'
-  //     },
-  //     {
-  //       id: 1,
-  //       label: 'Optimization Control Mechanism',
-  //       icon: 'square'
-  //     },
-  //     {
-  //       id: 2,
-  //       label: 'Control Projection',
-  //       icon: 'arrow-bottom-right'
-  //     },
-  //   ]
-  // },
   {
     categoryName: 'Modulatory',
     components: [
@@ -224,12 +201,6 @@ const structureDataNew = [
       {
         id: 0,
         label: 'Control Mechanism',
-        // label:
-        //   <div>
-        //       <DraggableTreeNode
-        //         id={0}
-        //         label={'Control Mechanism'}/>
-        //     </div>,
         icon: 'square'
       },
       {
@@ -265,21 +236,6 @@ const structureDataNew = [
       }
     ]
   },
-  // {
-  //   categoryName: 'Learning',
-  //   components: [
-  //     {
-  //       id: 5,
-  //       label: 'Learning Mechanism',
-  //       icon: 'square'
-  //     },
-  //     {
-  //       id: 6,
-  //       label: 'Learning Projection',
-  //       icon: 'arrow-bottom-right'
-  //     }
-  //   ]
-  // },
   {
     categoryName: 'Processing',
     components: [
@@ -315,6 +271,16 @@ const structureDataNew = [
       },
     ]
   },
+  {
+    categoryName: 'Options',
+    components: [
+      {
+        id: 13,
+        label: 'Change visualization',
+        icon: 'expand-all'
+      }
+    ]
+  },
 ];
 
 
@@ -347,9 +313,23 @@ class SideBar extends React.Component {
       nodes: PLOTVIEW_NODES,
       class: props.className !== undefined ? `${Classes.ELEVATION_0} ${props.className}`:Classes.ELEVATION_0
     }
+
+    this.sidebarHandler = this.sidebarHandler.bind(this);
   }
 
   componentDidUpdate() {
+  }
+
+  sidebarHandler(id) {
+    switch(id) {
+      case '13': {
+        this.props.changeVisualization();
+        break;
+      }
+      default: {
+        break;
+      }
+    }
   }
 
   render() {
@@ -416,6 +396,8 @@ class SideBar extends React.Component {
                       />
                       {item.components.map(component =>
                           <List.Item.Meta
+                              id={component?.id}
+                              key={component?.id}
                               avatar={<Icon
                                   icon={component.icon}
                               />}
@@ -424,6 +406,9 @@ class SideBar extends React.Component {
                                 marginLeft:'5px',
                                 marginBottom:'7px',
                                 cursor:'pointer'
+                              }}
+                              onClick={(event) => {
+                                this.sidebarHandler(event.currentTarget.id);
                               }}
                           />)}
                     </List.Item>
@@ -490,4 +475,4 @@ var PLOTVIEW_NODES = [
   }
 ];
 
-export default DropTarget(ItemTypes.PLOT, PlotSpec, collect)(connect(mapStateToProps)(SideBar))
+export default DropTarget(ItemTypes.PLOT, PlotSpec, collect)(connect(mapStateToProps, mapDispatchToProps)(SideBar))
