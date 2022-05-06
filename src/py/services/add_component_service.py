@@ -8,9 +8,7 @@ from psyneulink.core.rpc import graph_pb2
 
 def add_component(instruction: str, dg: DependencyGraph, model: Container):
     node = dg.add_new_instruction(instruction)
-    # TODO: Check if this is required since the add_component is already writing in the file and it reloads the
-    #  script/model
-    dg.execute_node(node)
+    # No need to execute the new instruction here because it will get executed when we write to the file
     model.add_new_instruction(instruction, dg.get_namespace())
 
 
