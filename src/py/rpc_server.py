@@ -373,9 +373,12 @@ def get_gv_json(name):
     correct_dict(gv_all_svg_dict)
     print_to_file("gv_all_svg_dict\n\n" + json.dumps(gv_all_svg_dict, indent=4))
 
-    gv_d = parse_corrected_dict(gv_svg_dict)
-    # gv_d = parse_corrected_dict(gv_all_svg_dict)
 
+    # gv_d = parse_corrected_dict(gv_svg_dict)
+    gv_d = parse_corrected_dict(gv_all_svg_dict)
+    gv_d['dot_format'] = {}
+    gv_d['dot_format']['simple'] = gv.pipe(format='dot').decode("utf-8")
+    gv_d['dot_format']['metadata'] = gv_all.pipe(format='dot').decode("utf-8")
     gv_d['maxX'] = float(gv_svg_dict['svg']['width'].replace('pt', ''))
     gv_d['maxY'] = float(gv_svg_dict['svg']['height'].replace('pt', ''))
     return gv_d

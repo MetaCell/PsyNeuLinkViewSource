@@ -16,7 +16,6 @@
     "antd": "^4.5.4",
     "chart.js": "^2.9.3",
     "compare-versions": "^3.6.0",
-    "download": "^8.0.0",
     "electron-is-dev": "^1.1.0",
     "electron-log": "^3.0.9",
     "fix-path": "^2.1.0",
@@ -24,7 +23,6 @@
     "git-clone": "^0.2.0",
     "google-protobuf": "^3.20.1",
     "graphviz": "0.0.9",
-    "https": "^1.0.0",
     "jquery": "^3.5.1",
     "jsdoc": "^3.6.6",
     "lodash": "^4.17.21",
@@ -42,7 +40,8 @@
     "recharts": "^1.8.5",
     "redux": "^4.0.5",
     "redux-form": "^8.3.6",
-    "reselect": "^4.0.0"
+    "reselect": "^4.0.0",
+    "viz.js": "^2.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -12,6 +12,7 @@ const initialState = {
     modelAspectRatio: null,
     plots: {},
     plotSpecs: {},
+    metadataVisualization: false,
 };
 
 export function reducer(state = initialState, action) {
@@ -110,7 +111,13 @@ export function reducer(state = initialState, action) {
                 }
             );
 
+        case atypes.CHANGE_VISUALIZATION:
+            return {
+                ...state,
+                metadataVisualization: !state.metadataVisualization,
+            };
+
         default:
-            return state
+            return state;
     }
 }

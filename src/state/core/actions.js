@@ -77,3 +77,9 @@ export function removePlotSpec(plotSpec){
         plotSpec: plotSpec
     }
 }
+
+export function changeVisualization() {
+    return {
+        type: atypes.CHANGE_VISUALIZATION,
+    }
+}
