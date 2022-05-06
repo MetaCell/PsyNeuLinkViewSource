@@ -36,8 +36,6 @@ class ProcessingMechanismCreator(IPythonInstructionCreator):
                                'GaussianDistort', 'SoftMax', 'LinearMatrix', 'TransferWithCosts'}
         },
     }
-    # Todo: str_template needs be built dynamically
-    str_template = "{name} = pnl.ProcessingMechanism(name='{name}', function=pnl.{function})"
 
     action_map = {
         'name': construct_name_str,
@@ -48,4 +46,10 @@ class ProcessingMechanismCreator(IPythonInstructionCreator):
         validate_params(ProcessingMechanismCreator.allowed_params, params)
         provided_params = set([param.key for param in params if '.' not in param.key])
         template_values = {pp: ProcessingMechanismCreator.action_map[pp](params) for pp in provided_params}
-        return template_to_str(ProcessingMechanismCreator.str_template, template_values)
+        return template_to_str(ProcessingMechanismCreator._get_str_template(provided_params), template_values)
+
+    @staticmethod
+    def _get_str_template(provided_params):
+        base_str_template = "{name} = pnl.ProcessingMechanism(name='{name}'"
+        end_str_template = ", function=pnl.{function})" if "function" in provided_params else ')'
+        return "".join([base_str_template, end_str_template])
