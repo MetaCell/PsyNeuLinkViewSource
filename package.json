@@ -22,6 +22,7 @@
     "fix-path": "^2.1.0",
     "formik-persist": "^1.1.0",
     "git-clone": "^0.2.0",
+    "google-protobuf": "^3.20.1",
     "graphviz": "0.0.9",
     "https": "^1.0.0",
     "jquery": "^3.5.1",

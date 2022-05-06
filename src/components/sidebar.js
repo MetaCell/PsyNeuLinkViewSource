@@ -297,7 +297,7 @@ const structureDataNew = [
         id: 9,
         label: 'Processing Mechanism',
         icon: 'square',
-        onClick: (callback) => addComponent(getProcessingMechanismParams("ProcessingMechanism", "test", "Linear"), callback)
+        onClick: (callback) => addComponent(getProcessingMechanismParams("ProcessingMechanism", "test", "Linear", 2), callback)
       },
       {
         id: 10,
