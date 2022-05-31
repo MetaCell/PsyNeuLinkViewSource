@@ -18,6 +18,8 @@ class RPCInterface{
         this.stylesheet_writer = null;
         this.instantiate_client = this.instantiate_client.bind(this);
         this.load_script = this.load_script.bind(this);
+        this.add_component = this.add_component.bind(this);
+        this.get_components = this.get_components.bind(this);
         this.get_json = this.get_json.bind(this);
         this.load_custom_pnl = this.load_custom_pnl.bind(this);
         this.deepPrintObj = this.deepPrintObj.bind(this);
@@ -258,6 +260,20 @@ class RPCInterface{
 
         call.on('end', function() {
             console.log("RPC stream end");
+        });
+    }
+    add_component(
+        params,
+        callback = () => {
+        }) {
+
+        let client = this.instantiate_client();
+        client.AddComponent(params, function (err, response) {
+            if (err) {
+                callback(err)
+            } else {
+                callback()
+            }
         });
     }
 

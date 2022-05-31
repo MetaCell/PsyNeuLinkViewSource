@@ -822,6 +822,7 @@ class WorkSpace extends React.PureComponent {
                     maxHeight = {
                         this.panelMaxHeight
                     }
+                    setStateFromRpcClient = {() => this.setStateFromRpcClient()}
                 />
             </div>,
             graphview = <div key="graphview">
