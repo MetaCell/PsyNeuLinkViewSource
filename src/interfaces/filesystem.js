@@ -2,15 +2,20 @@ const path = require('path'),
     os = require('os'),
     fs = require('fs'),
     isWin = os.platform() === 'win32',
-    _ = require('lodash');
+    _ = require('lodash'),
+    installation_config = require('./constants');
+
+
+let instance = null;
 
 class FileSystemInterface {
-    appPath = null;
-
     constructor() {
+        this.appPath = null;
         this.filewatchers = {};
-        this.initializeConfig();
+
+        this.initialize = this.initialize.bind(this);
     }
+
 
     /**
      * Adds {array} to watched files containing the file watcher in the 0th index and the un-debounced callback in the 1st index,
@@ -38,6 +43,7 @@ class FileSystemInterface {
         this.filewatchers[filepath] = fs.watch(filepath, _.debounce(callback, 50))
     }
 
+
     /**
      * Synchronously writes content (string or object) to filepath. If content is an object, first JSONifies content,
      * then writes to filepath.
@@ -60,6 +66,7 @@ class FileSystemInterface {
         })
     }
 
+
     /**
      * Synchronously reads a file and returns a copy of its contents.
      *
@@ -72,19 +79,33 @@ class FileSystemInterface {
         return fs.readFileSync(filepath,  {encoding: "utf-8"});
     }
 
+
+    getConfigFolder() {
+        return path.join(os.homedir(), installation_config['config_folder']);
+    }
+
+
+    getDependenciesFolder() {
+        return path.join(this.getConfigFolder(), installation_config['dependencies']);
+    }
+
+
+    getPsyNeuLinkPath() {
+        return path.join(this.getDependenciesFolder(), installation_config['psyneulink'])
+    }
+
+
     /**
      * Returns the system-dependent path of the PsyNeuLinkView config file
      */
     getConfigPath(){
         var configFileDir,
             configFilePath;
-        isWin ?
-            configFileDir = path.join(os.homedir(), 'AppData', 'Roaming', 'PsyNeuLinkView')
-            :
-            configFileDir = path.join(os.homedir(), 'Library', 'Preferences', 'PsyNeuLinkView');
+            configFileDir = this.getConfigFolder();
         configFilePath = path.join(configFileDir, 'config.json');
         return configFilePath
     }
+
 
     /**
      * Convenience method that returns an object containing the PsyNeuLinkView config file
@@ -92,6 +113,7 @@ class FileSystemInterface {
     getConfig(){
         return JSON.parse(this.read(this.getConfigPath()));
     }
+
 
     /**
      * Convenience method that writes an object to the PsyNeuLinkView config file
@@ -104,9 +126,11 @@ class FileSystemInterface {
         this.write(this.getConfigPath(), writeToFile);
     }
 
+
     getApplicationPath(){
         return this.appPath ? this.appPath : false
     }
+
 
     /**
      * Loads config file from local environment. Makes one if one does not exist. If one does exist, but is missing
@@ -137,13 +161,33 @@ class FileSystemInterface {
             this.setConfig({})
         }
         var config = this.getConfig(),
-            configTemplate = JSON.parse(this.read(path.join(__dirname ,'../resources/config-template.json'))),
+            configTemplate = JSON.parse(this.read(path.join(__dirname, installation_config['config_template']))),
             config = keyCopy(configTemplate, config);
 
-        config["Python"]["PsyNeuLink Path"] = path.join(__dirname, "../../..", "PsyNeuLink");
-        
+        if (!fs.existsSync(this.getPsyNeuLinkPath())) {
+            if (!fs.existsSync(this.getDependenciesFolder())) {
+                fs.mkdirSync(this.getDependenciesFolder());
+            }
+            throw new Error('PsyNeuLink missing in the dependencies folder.')
+        }
+
+        config['Python']['PsyNeuLink Path'] = this.getPsyNeuLinkPath();
         this.setConfig(config)
+    }
+
+    initialize() {
+        console.log('### FileSystem interface initialization ###');
+        this.initializeConfig();
     }
 }
 
-exports.fileSystemInterface = new FileSystemInterface();
+function initFileSystemInterface() {
+    instance = new FileSystemInterface();
+}
+
+exports.getFileSystemInterface = () => {
+    if (instance === null) {
+        initFileSystemInterface();
+    }
+    return instance;
+};

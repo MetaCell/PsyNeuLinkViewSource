@@ -12,3 +12,5 @@ export const SET_PLOT_SPECS = 'set_plot_specs';
 export const REMOVE_PLOT_SPEC = 'remove_plot_spec';
 
 export const SET_INPUT_FILE = 'set_input_file';
+
+export const CHANGE_VISUALIZATION = 'change_visualization';

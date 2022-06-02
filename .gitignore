@@ -28,3 +28,5 @@ yarn-error.log*
 /dist/
 /node_modules/
 public/config.ini
+dependencies/*
+.idea

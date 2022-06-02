@@ -20,6 +20,8 @@
     "electron-log": "^3.0.9",
     "fix-path": "^2.1.0",
     "formik-persist": "^1.1.0",
+    "git-clone": "^0.2.0",
+    "google-protobuf": "^3.20.1",
     "graphviz": "0.0.9",
     "jquery": "^3.5.1",
     "jsdoc": "^3.6.6",
@@ -38,7 +40,8 @@
     "recharts": "^1.8.5",
     "redux": "^4.0.5",
     "redux-form": "^8.3.6",
-    "reselect": "^4.0.0"
+    "reselect": "^4.0.0",
+    "viz.js": "^2.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

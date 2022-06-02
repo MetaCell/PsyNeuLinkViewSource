@@ -2,16 +2,18 @@
 If DEBUG_MODE is true, PNLV will not spawn its own python interpreter, thus allowing a developer to run and debug their
 own instance in an interactive shell. This can be used, e.g., to step through the python RPC server methods in a debugger.
 */
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 
 const path = require('path'),
     fs = require('fs'),
-    ifs = require('./filesystem').fileSystemInterface,
+    ifs = require('./filesystem').getFileSystemInterface(),
     os = require('os'),
     compareVersions = require('compare-versions'),
     log = require('electron-log'),
-    {spawn, spawnSync, exec, execSync} = require('child_process'),
+    {spawn, spawnSync, exec} = require('child_process'),
     isWin = os.platform() === 'win32';
+
+let instance = null;
 
 class InterpreterInterface{
     constructor(){
@@ -26,6 +28,7 @@ class InterpreterInterface{
         this.killRPCServer = this.killRPCServer.bind(this);
         this.restartRPCServer = this.restartRPCServer.bind(this);
         this.childProcs = [];
+        this.initialize = this.initialize.bind(this);
     }
 
     getChildProcs(){
@@ -346,6 +349,10 @@ class InterpreterInterface{
         this.killRPCServer();
         this.spawnRPCServer(callback, errorhandler);
     }
+
+    initialize() {
+        console.log('### Interpreter interface initialization ###')
+    }
 }
 
 /**
@@ -353,7 +360,10 @@ class InterpreterInterface{
  * separately from the main application in an interactive python session
  * */
 class DebugInterpreterInterface{
-    constructor(){}
+    constructor(){
+        this.initialize = this.initialize.bind(this);
+    }
+
     getChildProcs(){}
     startServer(prefix = '', interpreterPath, callback, errorhandler){
         callback()
@@ -383,11 +393,24 @@ class DebugInterpreterInterface{
     restartRPCServer(callback, errorhandler) {
         callback()
     }
+    initialize() {
+        console.log('### Interpreter interface initialization ###')
+    }
 }
 
-if (DEBUG_MODE){
-    exports.interpreterInterface = new DebugInterpreterInterface();
+
+function initInterpreterInterface() {
+    if (DEBUG_MODE){
+        instance = new DebugInterpreterInterface();
+    }
+    else {
+        instance = new InterpreterInterface();
+    }
 }
-else {
-    exports.interpreterInterface = new InterpreterInterface();
-}
+
+exports.getInterpreterInterface = () => {
+    if (instance === null) {
+        initInterpreterInterface();
+    }
+    return instance;
+};

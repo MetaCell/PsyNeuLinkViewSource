@@ -5,7 +5,7 @@ const fixPath = require('fix-path');
 const BrowserWindow = electron.BrowserWindow;
 const path = require('path');
 const isDev = require('electron-is-dev');
-const {spawn, spawnSync, exec, execSync} = require('child_process');
+const { exec } = require('child_process');
 const os = require('os');
 
 var adjustedAppPath;
@@ -14,6 +14,12 @@ var log = require('electron-log');
 const interfaces = require('../src/interfaces/interfaces').interfaces,
     interp = interfaces.interpreter;
 log.transports.console.level = "debug";
+
+interfaces.filesystem.initialize();
+interfaces.interpreter.initialize();
+interfaces.electron.initialize();
+interfaces.rpc.initialize();
+
 //TODO: figure out way around fixPath dependency
 fixPath();
 

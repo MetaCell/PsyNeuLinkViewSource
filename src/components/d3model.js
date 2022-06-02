@@ -9,13 +9,20 @@ import {connect} from "react-redux";
 import {store} from "../state/store";
 import {setModelAspectRatio, setStyleSheet} from "../state/core/actions";
 
+import Viz from 'viz.js';
+import { Module, render } from 'viz.js/full.render.js';
+
+
+let viz = new Viz({ Module, render });
+
 const util = require("util");
 
 const mapStateToProps = ({core}) => {
     return {
         graphStyle: core.stylesheet,
         styleSheet: core.stylesheet,
-        aspectRatio: core.modelAspectRatio
+        aspectRatio: core.modelAspectRatio,
+        metadataVisualization: core.metadataVisualization,
     }
 };
 
@@ -35,6 +42,11 @@ const style = {
     alignItems: "center",
     justifyContent: "center",
 };
+
+const shapes = {
+    POLYGON: 'polygon',
+    ELLIPSE: 'ellipse'
+}
 
 var fs = window.interfaces.filesystem,
     interp = window.interfaces.interpreter,
@@ -60,19 +72,22 @@ class D3model extends React.Component {
             reloadLocations: false,
             updateLocations: false
         };
+        this.nodes = [];
+        this.elementRendered = undefined;
     }
 
     debounceFunctions(){
         this.updateScript = _.debounce(this.updateScript, 100)
         this.setDirtyFlagToFalse = _.debounce(this.setDirtyFlagToFalse, 200)
         this.onResize = _.debounce(this.onResize, 100)
-
-        // this.props.checkScriptCallback = _.debounce(this.props.checkScriptCallback, 100);
     }
 
-    // lifecycle methods
 
+    // lifecycle methods
     componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.metadataVisualization !== prevProps.metadataVisualization) {
+            this.renderGraph();
+        }
         if (!(this.props.graph === prevProps.graph)) {
             if (this.props.graph === "loading") {
                 d3.selectAll('svg').remove();
@@ -81,11 +96,8 @@ class D3model extends React.Component {
                 d3.selectAll('svg').remove();
                 this.setState({"spinnerVisible": false});
                 this.stylesheet = null;
-
-                // ! first attempt at fixing node changing bug
-                // this.props.graph = this.props.checkScriptCallback();
-
-                this.setGraph();
+                // this.setGraph();
+                this.renderGraph();
             }
         }
         var sizeUpdated = (!_.isEqual(this.props.size, prevProps.size) && this.svg);
@@ -134,13 +146,33 @@ class D3model extends React.Component {
                 d3.selectAll('svg').remove();
                 this.setState({"spinnerVisible": false});
                 this.stylesheet = null;
-
-                // this.props.checkScriptCallback();
-
-                this.setGraph();
+                // this.setGraph();
+                this.renderGraph();
             }
         }
         this.efferentCopies = [];
+    }
+
+    renderGraph() {
+        var self = this;
+        if (this.elementRendered !== undefined) {
+            this.elementRendered.remove();
+        }
+        if (this.props.metadataVisualization) {
+            viz.renderSVGElement(this.props.graph.dot_format.metadata)
+            .then(function(element) {
+                self.elementRendered = element;
+                var anchor = document.getElementsByClassName("graph-view")[0];
+                anchor.appendChild(element);
+            });
+        } else {
+            viz.renderSVGElement(this.props.graph.dot_format.simple)
+            .then(function(element) {
+                self.elementRendered = element;
+                var anchor = document.getElementsByClassName("graph-view")[0];
+                anchor.appendChild(element);
+            });
+        }
     }
 
     mouseMove(e) {
@@ -193,6 +225,9 @@ class D3model extends React.Component {
         this.handleNodeDiff = this.handleNodeDiff.bind(this);
         this.associateVisualInformationWithGraphEdges = this.associateVisualInformationWithGraphEdges.bind(this);
         this.associateVisualInformationWithGraphNodes = this.associateVisualInformationWithGraphNodes.bind(this);
+        this.isObject = this.isObject.bind(this);
+        this.linkObjectToProps = this.linkObjectToProps.bind(this);
+        this.renderGraph = this.renderGraph.bind(this);
     }
     
     commitToStylesheetAndUpdateScript(callback = () => {
@@ -548,24 +583,52 @@ class D3model extends React.Component {
         );
     }
 
+    isObject(val) {
+        if (val === null) { return false;}
+        return ( (typeof val === 'function') || (typeof val === 'object') );
+    }
+
+    // iterate over objects or array
+    linkObjectToProps(item, callback) {
+        if (this.isObject(item)) {
+            callback(item);
+        } else if (Array.isArray(item)) {
+            item.forEach((instance) => callback(instance));
+        } else {
+            throw new Error('the item provided is neither an object or an array.');
+        }
+    }
+
     // ! modify this to accept non-elliptical objects for showing node structure?
     associateVisualInformationWithGraphNodes() {
+        var self = this;
+        let shape = undefined;
         this.props.graph.objects.forEach(function (d) {
-                d.x = parseInt(Math.abs(d.text.x));
-                d.y = parseInt(Math.abs(d.text.y));
-                if ('ellipse' in d) {
-                    d.color = d.ellipse.stroke;
-                    if ('stroke-width' in d.ellipse) {
-                        d.strokeWidth = parseInt(d.ellipse['stroke-width'])
-                    } else {
-                        d.strokeWidth = 1
-                    }
-                } else {
-                    d.color = d.polygon.stroke;
+                if (shapes.ELLIPSE in d) {
+                    const callback = (item) => {
+                        item.x = parseInt(Math.abs(item.text.x));
+                        item.y = parseInt(Math.abs(item.text.y));
+                        item.color = item.ellipse.stroke;
+                        if ('stroke-width' in item.ellipse) {
+                            item.strokeWidth = parseInt(item.ellipse['stroke-width'])
+                        } else {
+                            item.strokeWidth = 1
+                        }
+                        item.name = item.title;
+                    };
+                    self.linkObjectToProps(d, callback);
+                    shape = shapes.ELLIPSE;
+                } else if (shapes.POLYGON in d) {
+                    const callback = (item) => {
+                        d.color = d.polygon.stroke;
+                        item.name = item.title;
+                    };
+                    self.linkObjectToProps(d, callback);
+                    shape = shapes.POLYGON;
                 }
-                d.name = d.title;
             }
         );
+        return shape;
     }
 
     // associateVisualInformationWithGraphNodes(nodes) {
@@ -693,30 +756,105 @@ class D3model extends React.Component {
     }
 
 
-    // ! modify this to draw node-structure nodes
-    drawNodes(container, nodeDragFunction) {
+    // ! in charge of building polygons
+    drawPolygons(container, nodeDragFunction, polygons) {
+        var self = this;
+        var id = 0;
+
+        polygons.forEach(poly => {
+            var node = container.append('g')
+                .attr('class', 'node')
+                .selectAll(shapes.POLYGON)
+                // .data(currGraph)
+                .data(poly.polygon)
+                // .data(newG)
+                .enter()
+                .append(shapes.POLYGON)
+                .attr('id', function (d) {
+                    id += 1;
+                    return `n${id - 1}`
+                }).attr('points',function(d) {
+                    return d.points;
+                }).attr('rx', function (d) {
+                    d.rx = d.points.split(" ")[0].split(",")[0];
+                    return d.rx
+                })
+                .attr('ry', function (d) {
+                    d.rx = d.points.split(" ")[0].split(",")[1];
+                    return d.ry
+                })
+                .attr('cx', function (d) {
+                    return d.points.split(" ")[0].split(",")[0];
+                })
+                .attr('cy', function (d) {
+                    return d.points.split(" ")[0].split(",")[1];
+                })
+                .attr('fill', function(d) {
+                    if (d.fill) {
+                        return d.fill;
+                    }
+                    return '#fffff0';
+                })
+                .attr('stroke-width', function (d) {
+                    d.strokeWidth = d.strokeWidth ? d.strokeWidth : 1;
+                    return d.strokeWidth;
+                })
+                .attr('stroke', function (d) {
+                    return d.color
+                })
+                .attr('class', function () {
+                })
+                .call(d3.drag()
+                    .on('drag', nodeDragFunction)
+                    .on('end', () => {
+                        self.updateScript()
+                    })
+                )
+                .on("dblclick", (d) => {
+                    console.log("double clicked " + d.name);
+                })
+                .each(function() {
+                    var sel = d3.select(this);
+                    var state = false;
+                    sel.on('dblclick', function() {
+                        state = !state;
+                        if (state) {
+                            sel.style('stroke', 'black');
+                            sel.text(function (d) {
+                                return d.name.toUpperCase()
+                            })
+                        } else {
+                            sel.style('stroke', function(d) { return d.color; });
+                            sel.text(function (d) {
+                                return d.name.toLowerCase()
+                            })
+                        }
+                    })
+                })
+                .on('click', (d) => {
+                    this.unselectAll();
+                    this.selectNode(this.index.lookup(d))
+                });
+            this.index.addD3Group(node, 'node');
+        });
+    }
+
+
+    // ! in charge of building ellipsis
+    drawEllipsis(container, nodeDragFunction, ellipsis) {
         var self = this;
         var nodeWidth = self.state.nodeWidth;
         var nodeHeight = self.state.nodeHeight;
-        self.associateVisualInformationWithGraphNodes();
         var id = 0;
-
-        console.log("(drawNodes) this.props.graph: " + JSON.stringify(this.props.graph, null, 4));
-
-        // var currGraph = this.props.checkScriptCallback();
-        // console.log("currGraph in drawNodes: " + JSON.stringify(currGraph, null, 4));
-
-        // var newG = self.associateVisualInformationWithGraphNodes(currGraph.objects);
-
 
         var node = container.append('g')
             .attr('class', 'node')
-            .selectAll('ellipse')
+            .selectAll(shapes.ELLIPSE)
             // .data(currGraph)
-            .data(this.props.graph.objects)
+            .data(ellipsis)
             // .data(newG)
             .enter()
-            .append('ellipse')
+            .append(shapes.ELLIPSE)
             .attr('id', function (d) {
                 id += 1;
                 return `n${id - 1}`
@@ -754,35 +892,58 @@ class D3model extends React.Component {
             .on("dblclick", (d) => {
                 console.log("double clicked " + d.name);
             })
-
             .each(function() {
                 var sel = d3.select(this);
                 var state = false;
                 sel.on('dblclick', function() {
-                  state = !state;
-                  if (state) {
-                    sel.style('stroke', 'black');
-                    sel.text(function (d) {
-                        return d.name.toUpperCase()
-                    })
-                  } else {
-                    sel.style('stroke', function(d) { return d.color; });
-                    sel.text(function (d) {
-                        return d.name.toLowerCase()
-                    })
-                  }
-                }) 
+                    state = !state;
+                    if (state) {
+                        sel.style('stroke', 'black');
+                        sel.text(function (d) {
+                            return d.name.toUpperCase()
+                        })
+                    } else {
+                        sel.style('stroke', function(d) { return d.color; });
+                        sel.text(function (d) {
+                            return d.name.toLowerCase()
+                        })
+                    }
+                })
             })
-
             .on('click', (d) => {
                 this.unselectAll();
                 this.selectNode(this.index.lookup(d))
             });
-        this.index.addD3Group(node, 'node');
-        this.node = node
-
-        console.log("drawNodes() added node: " + node.name);
+        return node;
     }
+
+
+    // ! modify this to draw node-structure nodes
+    drawNodes(container, nodeDragFunction) {
+        var self = this;
+        self.associateVisualInformationWithGraphNodes();
+        console.log("(drawNodes) this.props.graph: " + JSON.stringify(this.props.graph, null, 4));
+
+        const ellipsis = this.props.graph.objects.filter(item => shapes.ELLIPSE in item);
+        const polygons = this.props.graph.objects.filter(item => shapes.POLYGON in item);
+
+        if (ellipsis.length > 0) {
+            var ellipNode = this.drawEllipsis(container, nodeDragFunction, ellipsis);
+            this.index.addD3Group(ellipNode, 'node');
+            this.node = ellipNode;
+            this.nodes.push(ellipNode);
+            console.log("drawNodes() added node: " + ellipNode.name);
+        }
+
+        if (polygons.length > 0) {
+            this.drawPolygons(container, nodeDragFunction, polygons);
+            
+            // this.node = polyNode;
+            // this.nodes.push(polyNode);
+            // console.log("drawNodes() added node: " + polyNode.name);
+        }
+    }
+
 
     drawLabels(container, labelDragFunction) {
         var self = this;
@@ -822,6 +983,8 @@ class D3model extends React.Component {
                 var sel = d3.select(this);
                 var state = false;
                 sel.on('dblclick', function() {
+                  console.log("Sel is:");
+                  console.log(sel);
                   state = !state;
                   if (state) {
                     // sel.style('stroke', 'black');

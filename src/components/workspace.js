@@ -565,19 +565,8 @@ class WorkSpace extends React.PureComponent {
         // var fsWait = false;
 
         fs.watch(filepath, (e)=>{
-
-            // if (fsWait) return;
-            // fsWait = setTimeout(() => {
-            //     fsWait = false;
-            // }, 100);
-
             window.dispatchEvent(new Event(e));
-
-            // will get called with any change to pnl script?
-            // self.loadScript(filepath);
-
-            // self.getCurrentGraphTopology();
-
+            self.loadScript(filepath);
             self.getCurrentGraphStyle()
         });
         window.remote.getCurrentWindow().setTitle(`${composition} \u2014 ${filepath}`)
@@ -632,7 +621,6 @@ class WorkSpace extends React.PureComponent {
     /**
      * Gets the currently specified graph style from the loaded script
      */
-    // !
     getCurrentGraphStyle(){
         var self = this;
         this.rpcClient.get_style(self.filepath, function (err) {
@@ -834,6 +822,7 @@ class WorkSpace extends React.PureComponent {
                     maxHeight = {
                         this.panelMaxHeight
                     }
+                    setStateFromRpcClient = {() => this.setStateFromRpcClient()}
                 />
             </div>,
             graphview = <div key="graphview">
