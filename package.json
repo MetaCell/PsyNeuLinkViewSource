@@ -1,0 +1,65 @@
+{
+  "name": "pnlv-poc",
+  "version": "0.1.0",
+  "main": "public/electron.js",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.8.1",
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-solid-svg-icons": "^5.13.0",
+    "@fortawesome/react-fontawesome": "^0.1.9",
+    "@material-ui/core": "4.12.1",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.60",
+    "@projectstorm/react-diagrams": "^6.6.1",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^12.0.0",
+    "@testing-library/user-event": "^13.5.0",
+    "ajv": "^6.12.6",
+    "closest": "0.0.1",
+    "dagre": "^0.8.5",
+    "electron-debug": "^3.2.0",
+    "electron-is-dev": "^1.2.0",
+    "lodash": "^4.17.21",
+    "pathfinding": "^0.4.18",
+    "paths-js": "^0.4.11",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.1",
+    "resize-observer-polyfill": "^1.5.1",
+    "typescript": "^4.6.4",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dev": "concurrently -k \"BROWSER=none yarn start\" \"yarn:electron\"",
+    "electron": "wait-on tcp:3000 && electron ."
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "concurrently": "^5.2.0",
+    "electron": "^19.0.0",
+    "wait-on": "^5.1.0"
+  }
+}
