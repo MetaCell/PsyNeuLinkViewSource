@@ -21,6 +21,9 @@ const vars = {
   listBorderColor: 'rgba(0, 0, 0, 0.04)',
 
   dividerColor: 'rgba(118, 120, 125, 0.12)',
+
+  dropdownBg: 'rgba(246, 246, 248, 0.8)',
+  dropdownTextColor: 'rgba(60, 60, 67, 0.6)'
 };
 
 export default vars;

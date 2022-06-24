@@ -202,10 +202,6 @@ const theme = {
               },
             },
 
-            '& .MuiTypography-root': {
-              margin: 0
-            },
-
             '& .MuiChip-root': {
               marginLeft: '0.25rem'
             },
@@ -216,6 +212,7 @@ const theme = {
               lineHeight: '1.25rem',
               letterSpacing: '-0.005rem',
               color: chipBgColor,
+              margin: 0
             },
           },
         }
@@ -257,6 +254,46 @@ const theme = {
           },
         },
       }
+    },
+
+    MuiSwitch: {
+      styleOverrides: {
+        root: {
+          padding: 0,
+          width: '2rem',
+          borderRadius: '3.125rem',
+          height: '1.25rem',
+        },
+
+        switchBase: {
+          padding: 0,
+          background: textWhite,
+          top: '0.125rem',
+           transform: 'translateX(0.125rem)',
+
+          '&.Mui-checked': {
+            transform: 'translateX(0.875rem)',
+            color: textWhite,
+
+            '& + .MuiSwitch-track': {
+              opacity: 1,
+              background: listItemActiveBg,
+            },
+          },
+        },
+
+        thumb: {
+          boxShadow: '0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15), 0 0.1875rem 0.0625rem rgba(0, 0, 0, 0.06)',
+          width: '1rem',
+          height: '1rem',
+        },
+
+        track: {
+          borderRadius: '3.125rem',
+          opacity: 1,
+          backgroundColor: primaryBg
+        },
+      },
     },
   },
 };

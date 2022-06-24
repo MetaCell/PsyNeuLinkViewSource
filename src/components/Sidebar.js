@@ -81,7 +81,7 @@ const Sidebar = () => {
           </ListItemIcon>
         </ListItemButton>
 
-         <ListItemButton disabled>
+         <ListItemButton>
           <ListItemIcon>
             <img src={FULLSCREEN} alt="icon" />
           </ListItemIcon>
