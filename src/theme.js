@@ -17,7 +17,11 @@ const {
   listItemActiveBg,
   listSelectedTextColor,
   listBoxShadow,
-  listBorderColor
+  listBorderColor,
+  progressBg,
+  progressBar,
+  progressShadow,
+  switchShadow
 } = vars;
 
 const theme = {
@@ -283,7 +287,7 @@ const theme = {
         },
 
         thumb: {
-          boxShadow: '0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15), 0 0.1875rem 0.0625rem rgba(0, 0, 0, 0.06)',
+          boxShadow: switchShadow,
           width: '1rem',
           height: '1rem',
         },
@@ -292,6 +296,22 @@ const theme = {
           borderRadius: '3.125rem',
           opacity: 1,
           backgroundColor: primaryBg
+        },
+      },
+    },
+
+    MuiLinearProgress: {
+      styleOverrides: {
+        root: {
+          height: '0.375rem',
+          borderRadius: '0.6875rem',
+          background: progressBg,
+          boxShadow: progressShadow
+        },
+
+        bar: {
+          background: progressBar,
+          borderRadius: '0.6875rem'
         },
       },
     },

@@ -68,9 +68,10 @@ const useStyles = makeStyles((theme) => ({
       borderColor: `transparent transparent ${dropdownBg} transparent`,
       position: 'absolute',
       top: '-1rem',
-      right: 0,
-      left: 0,
-      margin: '0 auto',
+      // right: 0,
+      // left: 0,
+      // margin: '0 auto',
+      left: '2rem'
     },
   },
 

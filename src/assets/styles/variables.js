@@ -23,7 +23,15 @@ const vars = {
   dividerColor: 'rgba(118, 120, 125, 0.12)',
 
   dropdownBg: 'rgba(246, 246, 248, 0.8)',
-  dropdownTextColor: 'rgba(60, 60, 67, 0.6)'
+  dropdownTextColor: 'rgba(60, 60, 67, 0.6)',
+
+  overlayColor: 'rgba(0, 0, 0, 0.4)',
+
+  progressBg: '#E5E5E5',
+  progressBar: '#017AFF',
+  progressShadow: 'inset 0 0 0.0625rem #E3E3E3',
+
+  switchShadow: '0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15), 0 0.1875rem 0.0625rem rgba(0, 0, 0, 0.06)'
 };
 
 export default vars;
