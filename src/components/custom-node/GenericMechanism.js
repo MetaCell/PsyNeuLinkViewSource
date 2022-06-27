@@ -1,12 +1,12 @@
 import * as React from "react";
 import InputNode from "./InputNode";
-import Accordion from "@material-ui/core/Accordion";
-import AccordionSummary from "@material-ui/core/AccordionSummary";
-import AccordionDetails from "@material-ui/core/AccordionDetails";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Typography from "@material-ui/core/Typography";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Typography from "@mui/material/Typography";
 import { PortWidget } from "@projectstorm/react-diagrams";
-import { withStyles } from "@material-ui/core/styles";
+import { withStyles } from "@mui/styles";
 
 const styles = (theme) => ({
   root: {
@@ -15,7 +15,7 @@ const styles = (theme) => ({
   },
 });
 
-class JSCustomNodeWidget2 extends React.Component {
+class GenericMechanism extends React.Component {
   render() {
     const { classes } = this.props;
     return (
@@ -71,4 +71,4 @@ class JSCustomNodeWidget2 extends React.Component {
   }
 }
 
-export default withStyles(styles)(JSCustomNodeWidget2);
+export default withStyles(styles)(GenericMechanism);

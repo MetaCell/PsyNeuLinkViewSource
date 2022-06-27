@@ -1,14 +1,17 @@
 import './App.css';
-import Main from './components/Main';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme';
+import Layout from './components/common/Layout';
+import Loader from './components/common/Loader';
 
 function App() {
   return (
-    <div className="App">
-      <div className="topBar"></div>
-      <div className="main">
-        <Main />
-      </div>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Layout />
+      {/* <Loader /> */}
+    </ThemeProvider>
   );
 }
 
