@@ -13,6 +13,7 @@ const { textWhite, dividerColor } = vars;
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    zIndex: '5',
     width: '4rem',
     background: textWhite,
     boxShadow: '0 0 3.75rem rgba(0, 0, 0, 0.1), 0 0.5rem 2.5rem -0.625rem rgba(0, 0, 0, 0.1)',

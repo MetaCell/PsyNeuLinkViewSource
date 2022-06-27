@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { JSCustomNodeModel } from './JSCustomNodeModel';
 import JSCustomNodeWidget from './JSCustomNodeWidget';
-import JSCustomNodeWidget2 from './JSCustomNodeWidget2';
+import GenericMechanism from './GenericMechanism';
 import JSCustomNodeWidget3 from './JSCustomNodeWidget3';
 import { AbstractReactFactory } from '@projectstorm/react-canvas-core';
 
@@ -20,7 +20,7 @@ export class JSCustomNodeFactory extends AbstractReactFactory {
 				return <JSCustomNodeWidget engine={this.engine} node={event.model} />;
 			}
 			case 'circle': {
-				return <JSCustomNodeWidget2 engine={this.engine} node={event.model} />;
+				return <GenericMechanism engine={this.engine} node={event.model} />;
 			}
 			case 'hexagon': {
 				return <JSCustomNodeWidget3 engine={this.engine} node={event.model} />;

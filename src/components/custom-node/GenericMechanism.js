@@ -15,7 +15,7 @@ const styles = (theme) => ({
   },
 });
 
-class JSCustomNodeWidget2 extends React.Component {
+class GenericMechanism extends React.Component {
   render() {
     const { classes } = this.props;
     return (
@@ -71,4 +71,4 @@ class JSCustomNodeWidget2 extends React.Component {
   }
 }
 
-export default withStyles(styles)(JSCustomNodeWidget2);
+export default withStyles(styles)(GenericMechanism);
