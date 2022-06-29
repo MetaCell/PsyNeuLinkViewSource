@@ -20,51 +20,8 @@ class GenericMechanism extends React.Component {
     const { classes } = this.props;
     return (
       <>
-        <div className="custom-node2" style={{ zIndex: 999999999 }}>
-          <PortWidget
-            style={{position: 'absolute', top: '0px', left: '0px'}}
-            engine={this.props.engine}
-            port={this.props.node.getPort("in")}
-          >
-            <div className="circle-port" />
-          </PortWidget>
-          <PortWidget
-            style={{position: 'absolute', top: '0px', right: '0px'}}
-            engine={this.props.engine}
-            port={this.props.node.getPort("out")}
-          >
-            <div className="circle-port" />
-          </PortWidget>
-          {/* <div className="custom-node-color" style={{ backgroundColor: this.props.node.color }} /> */}
-          <div
-            style={{
-              left: "0px",
-			        top: '10px',
-              bottom: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <InputNode property="Props1" top="15" />
-            <InputNode property="Props2" top="60" />
-            <Accordion style={{position: 'absolute', top: "130px", left: '0px', marginLeft: '0px', paddingLeft: '0px'}}>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                <Typography className={classes.heading}>Accordion 1</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-                  eget.
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-          </div>
-          <div></div>
+        <div className="custom-node2" style={{ zIndex: 999999999, background: "#D4F4D4" }}>
+          <div>Mechanism</div>
         </div>
       </>
     );
