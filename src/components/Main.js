@@ -1,9 +1,14 @@
 import React from 'react';
+import MechanismNode from '../model/nodes/mechanism/MechanismNode';
+import ModelInterpreter from '../model/Interpreter';
+
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import createEngine, { DiagramModel, DefaultNodeModel, DefaultLinkModel } from '@projectstorm/react-diagrams';
 import { JSCustomNodeModel } from './custom-node/JSCustomNodeModel';
 import { JSCustomNodeFactory } from './custom-node/JSCustomNodeFactory';
-// import '../App.css';
+
+// import mockModel from '../resources/model.dot';
+const mockModel = require('../resources/model').mockModel;
 
 export default class Main extends React.Component {
   constructor (props) {
@@ -12,6 +17,8 @@ export default class Main extends React.Component {
   }
 
   render () {
+	const interpreter = new ModelInterpreter(mockModel);
+
     //1) setup the diagram engine
 	var engine = createEngine();
     engine.getNodeFactories().registerFactory(new JSCustomNodeFactory());
