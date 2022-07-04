@@ -1,4 +1,7 @@
 import React from 'react';
+import MechanismNode from '../model/nodes/mechanism/MechanismNode';
+import ModelInterpreter from '../model/Interpreter';
+
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import createEngine, { DiagramModel, DefaultNodeModel, DefaultLinkModel } from '@projectstorm/react-diagrams';
 import { JSCustomNodeModel } from './custom-node/JSCustomNodeModel';
@@ -8,6 +11,9 @@ import BG from "../assets/svg/bg-dotted.svg";
 import mechanismGreen from '../assets/svg/mechanism-green.svg';
 import mechanismYellow from '../assets/svg/mechanism-yellow.svg';
 // import '../App.css';
+
+// import mockModel from '../resources/model.dot';
+const mockModel = require('../resources/model').mockModel;
 
 
 const styles = () => ({
@@ -36,6 +42,8 @@ class Main extends React.Component {
 
   render() {
     const { classes } = this.props;
+	  const interpreter = new ModelInterpreter(mockModel);
+
     //1) setup the diagram engine
 	var engine = createEngine();
     engine.getNodeFactories().registerFactory(new JSCustomNodeFactory());
