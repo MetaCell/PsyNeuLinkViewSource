@@ -1,0 +1,115 @@
+import * as React from "react";
+import { withStyles } from "@mui/styles";
+import { Box, Button } from "@mui/material";
+import { PortWidget } from "@projectstorm/react-diagrams";
+
+const styles = () => ({
+  nodes: {
+    width: '10rem',
+    height: '10rem',
+    border: '0.09375rem solid #18A0FB',
+    zIndex: 99999,
+    position: 'absolute',
+  },
+
+  node: {
+    width: '0.625rem',
+    height: '0.625rem',
+    background: '#FFFFFF',
+    border: '0.09375rem solid #18A0FB',
+    borderRadius: '0.125rem',
+    position: 'absolute',
+  },
+
+  button: {
+    '&.MuiButton-root': {
+      backgroundColor: '#161A1E',
+      borderRadius: '1.125rem',
+      fontWeight: 600,
+      fontSize: '0.8125rem',
+      display: 'flex',
+      lineHeight: '1rem',
+      letterSpacing: '-0.025625rem',
+      color: 'rgba(255, 255, 255, 0.8)',
+      margin: '0 auto 0.375rem !important',
+      width: '9.625rem',
+      padding: '0.625rem',
+
+      '&:hover': {
+        backgroundColor: '#161A1E',
+      },
+    },
+  },
+
+  circle: {
+    width: '1rem',
+    border: 'solid 0.0625rem',
+    height: '1rem',
+    borderRadius: '50%',
+    marginRight: '1.25rem',
+    position: 'relative',
+
+    '&:after': {
+      content: '""',
+      height: '1.75rem',
+      width: '0.0625rem',
+      display: 'block',
+      position: 'absolute',
+      right: '-0.625rem',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    },
+  },
+});
+
+class NodeSelection extends React.Component {
+  render() {
+    const { classes, node, node: { options }, engine, text } = this.props;
+
+    return (
+      <>
+        <Button className={classes.button}>
+          <Box
+            className={classes.circle}
+            style={{
+              background: options.backgroundColor,
+              borderColor: options.borderColor,
+              boxShadow: options.boxShadow,
+            }}
+          />
+          {text}
+        </Button>
+        <Box className={classes.nodes}>
+          <PortWidget
+            engine={engine}
+            port={node.getPort("in")}
+          >
+            <Box style={{ left: '-0.375rem', top: '-0.375rem' }} className={classes.node} />
+          </PortWidget>
+          <PortWidget
+            engine={engine}
+            port={node.getPort("out")}
+          >
+            <Box style={{ right: '-0.375rem', top: '-0.375rem' }} className={classes.node} />
+          </PortWidget>
+
+          <PortWidget
+            engine={engine}
+            port={node.getPort("in")}
+          >
+            <Box style={{ left: '-0.375rem', bottom: '-0.375rem' }} className={classes.node} />
+          </PortWidget>
+          <PortWidget
+            engine={engine}
+            port={node.getPort("out")}
+          >
+            <Box style={{ bottom: '-0.375rem', right: '-0.375rem' }} className={classes.node} />
+          </PortWidget>
+        </Box>
+      </>
+    );
+  }
+}
+
+export default withStyles(styles)(NodeSelection);
