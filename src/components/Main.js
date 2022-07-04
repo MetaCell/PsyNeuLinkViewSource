@@ -1,5 +1,5 @@
 import React from 'react';
-import MechanismNode from '../model/nodes/mechanism/MechanismNode';
+// import MechanismNode from '../model/nodes/mechanism/MechanismNode';
 import ModelInterpreter from '../model/Interpreter';
 
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
