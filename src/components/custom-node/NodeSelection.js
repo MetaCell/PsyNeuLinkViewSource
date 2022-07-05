@@ -86,9 +86,9 @@ class NodeSelection extends React.Component {
           <Box
             className={classes.circle}
             style={{
-              background: options.backgroundColor,
-              borderColor: options.borderColor,
-              boxShadow: options.boxShadow,
+              background: options.variant.backgroundColor,
+              borderColor: options.variant.borderColor,
+              boxShadow: options.variant.boxShadow,
             }}
           />
           {text}
