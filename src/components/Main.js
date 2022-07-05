@@ -10,6 +10,7 @@ import { withStyles } from '@mui/styles';
 import BG from "../assets/svg/bg-dotted.svg";
 import mechanismGreen from '../assets/svg/mechanism-green.svg';
 import mechanismYellow from '../assets/svg/mechanism-yellow.svg';
+import { colorOrange, colorGreen } from '../assets/styles/constant';
 // import '../App.css';
 
 // import mockModel from '../resources/model.dot';
@@ -62,10 +63,7 @@ class Main extends React.Component {
 
 	var node4 = new JSCustomNodeModel({
 		name: 'Mechanism Name',
-    backgroundColor: '#D4F4D4',
-    textColor: '#669D66',
-    borderColor: 'rgba(102, 157, 102, 0.2)',
-    boxShadow: '0 0.25rem 0.625rem -0.25rem rgba(102, 157, 102, 0.3)',
+    variant: colorGreen,
     icon: mechanismGreen,
     pnlClass: 'ProcessingMechanism',
     shape: 'circle',
@@ -73,10 +71,7 @@ class Main extends React.Component {
 	});
 	var node5 = new JSCustomNodeModel({
 		name: 'Mechanism Name',
-		backgroundColor: '#F4E9D4',
-    textColor: '#9D8B66',
-    borderColor: 'rgba(157, 139, 102, 0.2)',
-    boxShadow: '0 0.25rem 0.625rem -0.25rem rgba(157, 139, 102, 0.3)',
+    variant: colorOrange,
     icon: mechanismYellow,
     pnlClass: 'ProcessingMechanism',
     shape: 'default',
