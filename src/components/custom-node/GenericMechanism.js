@@ -34,7 +34,7 @@ class GenericMechanism extends React.Component {
     const { classes, node, node: { options }, engine } = this.props;
 
     return (
-      <>
+      <Box position='relative'>
         {options.selected && (
           <NodeSelection node={node} engine={engine} text={"Show properties"} />
         )}
@@ -52,7 +52,7 @@ class GenericMechanism extends React.Component {
             {options.name}
           </Typography>
         </Box>
-      </>
+      </Box>
     );
   }
 }
