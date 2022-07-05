@@ -42,13 +42,13 @@ class GenericMechanism extends React.Component {
         <Box
           className={classes.root}
           style={{
-            background: options.backgroundColor,
-            borderColor: options.borderColor,
-            boxShadow: options.boxShadow,
+            background: options.variant.backgroundColor,
+            borderColor: options.variant.borderColor,
+            boxShadow: options.variant.boxShadow,
           }}
         >
           <img src={options.icon} alt="mechanism" />
-          <Typography component="p" style={{ color: options.textColor }}>
+          <Typography component="p" style={{ color: options.variant.textColor }}>
             {options.name}
           </Typography>
         </Box>
