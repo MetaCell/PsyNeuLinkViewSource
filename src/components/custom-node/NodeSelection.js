@@ -12,6 +12,11 @@ const styles = () => ({
     position: 'absolute',
   },
 
+  nodesDefault: {
+    width: '18rem',
+    height: '100%',
+  },
+
   node: {
     width: '0.625rem',
     height: '0.625rem',
@@ -31,9 +36,15 @@ const styles = () => ({
       lineHeight: '1rem',
       letterSpacing: '-0.025625rem',
       color: 'rgba(255, 255, 255, 0.8)',
-      margin: '0 auto 0.375rem !important',
+      margin: '0 !important',
       width: '9.625rem',
-      padding: '0.625rem',
+      padding: '0',
+      height: '2.25rem',
+      position: 'absolute',
+      top: '-2.625rem',
+      fontFamily: 'Inter,sans-serif',
+      left: '50%',
+      transform: 'translateX(-50%)',
 
       '&:hover': {
         backgroundColor: '#161A1E',
@@ -67,6 +78,8 @@ class NodeSelection extends React.Component {
   render() {
     const { classes, node, node: { options }, engine, text } = this.props;
 
+    const nodeClass = options.shape === 'default' ? classes.nodesDefault : '';
+
     return (
       <>
         <Button className={classes.button}>
@@ -80,7 +93,7 @@ class NodeSelection extends React.Component {
           />
           {text}
         </Button>
-        <Box className={classes.nodes}>
+        <Box className={`${classes.nodes} ${nodeClass}`}>
           <PortWidget
             engine={engine}
             port={node.getPort("in")}
