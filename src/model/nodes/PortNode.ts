@@ -3,28 +3,28 @@ import { Direction } from '../../constants';
 export default class Port {
     id: String;
     name: String;
-    role: Enumerator<Direction>;
+    role: Direction;
 
-    constructor(id: string, name: string, role: Enumerator<Direction>) {
+    constructor(id: string, name: string, role: Direction) {
         this.id = id ? id : this._throw('Port ID should be defined.', '');
         this.name = name ? name : id;
         this.role = role ? role : this._throw('Port role should be defined.', Direction.INPUT);
     }
 
-    _throw(m, returnValue) {
+    _throw(m: string, returnValue: any) {
         throw m;
         return returnValue;
     }
 
-    getId() {
+    getId() : String {
         return this.id;
     }
 
-    getName() {
+    getName() : String {
         return this.name;
     }
 
-    getRole() {
+    getRole() : Direction {
         return this.role;
     }
 }

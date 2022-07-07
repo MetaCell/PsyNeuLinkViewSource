@@ -1,4 +1,7 @@
-var parse = require('dotparser');
+import { castObject } from './utils';
+
+const parse = require('dotparser');
+const html2json = require('html2json').html2json
 
 
 export default class ModelInterpreter {
@@ -13,13 +16,19 @@ export default class ModelInterpreter {
             'mechanisms': [],
         };
 
+        const castedModel = {
+            'compositions': [],
+            'mechanisms': [],
+        };
+
         parsedModel.compositions = model.compositions.map(singleModel => {
-            let newModel = parse(singleModel);
+            const newModel = parse(singleModel).map(elem => castObject(elem));
             return newModel;
         });
 
         parsedModel.mechanisms = model.mechanisms.map(singleNode => {
-            let newNode = parse(singleNode);
+            let tempNode = parse(singleNode)[0].children.filter(elem => elem.node_id.id !== 'graph');
+            let newNode = tempNode.map(elem => castObject(elem));
             return newNode;
         });
 
