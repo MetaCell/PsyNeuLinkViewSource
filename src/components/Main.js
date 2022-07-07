@@ -6,18 +6,44 @@ import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import createEngine, { DiagramModel, DefaultNodeModel, DefaultLinkModel } from '@projectstorm/react-diagrams';
 import { JSCustomNodeModel } from './custom-node/JSCustomNodeModel';
 import { JSCustomNodeFactory } from './custom-node/JSCustomNodeFactory';
+import { withStyles } from '@mui/styles';
+import BG from "../assets/svg/bg-dotted.svg";
+import mechanismGreen from '../assets/svg/mechanism-green.svg';
+import mechanismYellow from '../assets/svg/mechanism-yellow.svg';
+import { colorOrange, colorGreen } from '../assets/styles/constant';
+// import '../App.css';
 
 // import mockModel from '../resources/model.dot';
 const mockModel = require('../resources/model').mockModel;
 
-export default class Main extends React.Component {
+
+const styles = () => ({
+  root: {
+    position: 'absolute',
+    top: '3.5rem',
+    left: 0,
+    height: 'calc(100% - 3.5rem)',
+    width: '100%',
+    backgroundRepeat: 'repeat',
+    backgroundColor: '#fff',
+    backgroundImage: `url(${BG})`
+  },
+
+  diagramContainer: {
+    width: '100%',
+    height: '100%',
+  },
+});
+
+class Main extends React.Component {
   constructor (props) {
     super(props);
     this.state = {};
   }
 
-  render () {
-	const interpreter = new ModelInterpreter(mockModel);
+  render() {
+    const { classes } = this.props;
+	  const interpreter = new ModelInterpreter(mockModel);
 
     //1) setup the diagram engine
 	var engine = createEngine();
@@ -36,16 +62,20 @@ export default class Main extends React.Component {
 	// });
 
 	var node4 = new JSCustomNodeModel({
-		name: 'Node 4',
-		color: 'red',
+		name: 'Mechanism Name',
+    variant: colorGreen,
+    icon: mechanismGreen,
     pnlClass: 'ProcessingMechanism',
-		shape: 'circle'
+    shape: 'circle',
+    selected: true
 	});
 	var node5 = new JSCustomNodeModel({
-		name: 'Node 5',
-		color: 'red',
+		name: 'Mechanism Name',
+    variant: colorOrange,
+    icon: mechanismYellow,
     pnlClass: 'ProcessingMechanism',
-		shape: 'circle'
+    shape: 'default',
+    selected: false
 	});
 	node4.setPosition(700,200);
 	node5.setPosition(900,200);
@@ -66,9 +96,12 @@ export default class Main extends React.Component {
 	engine.setModel(model);
 
     return (
-        <div className='main'>
-            <CanvasWidget className="diagram-container" engine={engine} />
-        </div>
+      <div className={classes.root}>
+        <CanvasWidget className={classes.diagramContainer} engine={engine} />
+      </div>
     );
   }
 }
+
+
+export default withStyles(styles)(Main);

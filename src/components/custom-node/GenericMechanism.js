@@ -1,29 +1,58 @@
 import * as React from "react";
-import InputNode from "./InputNode";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Typography from "@mui/material/Typography";
-import { PortWidget } from "@projectstorm/react-diagrams";
 import { withStyles } from "@mui/styles";
+import { Box, Typography } from "@mui/material";
+import NodeSelection from "./NodeSelection";
 
-const styles = (theme) => ({
+const styles = () => ({
   root: {
-    display: "flex",
-    alignItems: "stretch",
+    border: 'solid 0.0625rem',
+    borderRadius: '50%',
+    width: '10rem',
+    height: '10rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    position: 'relative',
+
+    '& img': {
+      marginBottom: '0.25rem',
+    },
+
+    '& p': {
+      fontWeight: 500,
+      fontSize: '0.8125rem',
+      lineHeight: '1.25rem',
+      letterSpacing: '-0.005rem',
+      margin: 0,
+    },
   },
 });
 
 class GenericMechanism extends React.Component {
   render() {
-    const { classes } = this.props;
+    const { classes, node, node: { options }, engine } = this.props;
+
     return (
-      <>
-        <div className="custom-node2" style={{ zIndex: 999999999, background: "#D4F4D4" }}>
-          <div>Mechanism</div>
-        </div>
-      </>
+      <Box position='relative'>
+        {options.selected && (
+          <NodeSelection node={node} engine={engine} text={"Show properties"} />
+        )}
+
+        <Box
+          className={classes.root}
+          style={{
+            background: options.variant.backgroundColor,
+            borderColor: options.variant.borderColor,
+            boxShadow: options.variant.boxShadow,
+          }}
+        >
+          <img src={options.icon} alt="mechanism" />
+          <Typography component="p" style={{ color: options.variant.textColor }}>
+            {options.name}
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 }
