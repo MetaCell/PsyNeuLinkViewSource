@@ -1,72 +1,58 @@
 import * as React from "react";
-import InputNode from "./InputNode";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Typography from "@mui/material/Typography";
-import { PortWidget } from "@projectstorm/react-diagrams";
 import { withStyles } from "@mui/styles";
+import { Box, Typography } from "@mui/material";
+import NodeSelection from "./NodeSelection";
 
-const styles = (theme) => ({
+const styles = () => ({
   root: {
-    display: "flex",
-    alignItems: "stretch",
+    border: 'solid 0.0625rem',
+    borderRadius: '50%',
+    width: '10rem',
+    height: '10rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    position: 'relative',
+
+    '& img': {
+      marginBottom: '0.25rem',
+    },
+
+    '& p': {
+      fontWeight: 500,
+      fontSize: '0.8125rem',
+      lineHeight: '1.25rem',
+      letterSpacing: '-0.005rem',
+      margin: 0,
+    },
   },
 });
 
 class GenericMechanism extends React.Component {
   render() {
-    const { classes } = this.props;
+    const { classes, node, node: { options }, engine } = this.props;
+
     return (
-      <>
-        <div className="custom-node2" style={{ zIndex: 999999999 }}>
-          <PortWidget
-            style={{position: 'absolute', top: '0px', left: '0px'}}
-            engine={this.props.engine}
-            port={this.props.node.getPort("in")}
-          >
-            <div className="circle-port" />
-          </PortWidget>
-          <PortWidget
-            style={{position: 'absolute', top: '0px', right: '0px'}}
-            engine={this.props.engine}
-            port={this.props.node.getPort("out")}
-          >
-            <div className="circle-port" />
-          </PortWidget>
-          {/* <div className="custom-node-color" style={{ backgroundColor: this.props.node.color }} /> */}
-          <div
-            style={{
-              left: "0px",
-			        top: '10px',
-              bottom: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <InputNode property="Props1" top="15" />
-            <InputNode property="Props2" top="60" />
-            <Accordion style={{position: 'absolute', top: "130px", left: '0px', marginLeft: '0px', paddingLeft: '0px'}}>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                <Typography className={classes.heading}>Accordion 1</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-                  eget.
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-          </div>
-          <div></div>
-        </div>
-      </>
+      <Box position='relative'>
+        {options.selected && (
+          <NodeSelection node={node} engine={engine} text={"Show properties"} />
+        )}
+
+        <Box
+          className={classes.root}
+          style={{
+            background: options.variant.backgroundColor,
+            borderColor: options.variant.borderColor,
+            boxShadow: options.variant.boxShadow,
+          }}
+        >
+          <img src={options.icon} alt="mechanism" />
+          <Typography component="p" style={{ color: options.variant.textColor }}>
+            {options.name}
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 }
