@@ -1,10 +1,8 @@
 // import MetaDiagram from 'meta-diagram';
 import PortNode from '../PortNode';
 import IMetaDiagramConverter from '../IMetaDiagramConverter';
-import { castObject } from '../../utils';
 
-
-export default class MechanismNode extends IMetaDiagramConverter {
+export default class MechanismNode implements IMetaDiagramConverter {
     name: String;
     icon: String;
     isExpanded: Boolean;
@@ -12,8 +10,6 @@ export default class MechanismNode extends IMetaDiagramConverter {
     extra: Object;
 
     constructor(name: string, icon?: string, isExpaded?: boolean, ports?: Array<PortNode>, extra?: Object) {
-        super();
-
         this.name = name;
         this.icon = icon !== undefined ? icon : "";
         this.ports = ports !== undefined ? ports : [];

@@ -1,5 +1,6 @@
 import MechanismNode from './nodes/mechanism/MechanismNode';
 import CompositionNode from './nodes/composition/CompositionNode';
+import ProjectionLink from './links/ProjectionLink';
 import { PNLTypes } from '../constants';
 
 const html2json = require('html2json').html2json
@@ -48,6 +49,28 @@ export function castObject(item) {
                 }
             });
             newNode = new MechanismNode(item?.node_id?.id, '', false, ports, extra);
+            break;
+        }
+        case PNLTypes.PROJECTION: {
+            let name = '';
+            let extra = {};
+            let sender, senderPort, receiver, receiverPort;
+            item.attr_list.forEach(singleAttr => {
+                if (singleAttr.id === 'label') {
+                    name = singleAttr.eq;
+                    return;
+                }
+                if (singleAttr.type === 'attr') {
+                    extra[singleAttr?.id] = singleAttr?.eq;
+                }
+            });
+            if (item.edge_list.length === 2) {
+                sender = item.edge_list[0].id;
+                senderPort = item.edge_list[0]['port']['id'];
+                receiver = item.edge_list[1].id;
+                receiverPort = item.edge_list[1]['port']['id'];
+            }
+            newNode = new ProjectionLink(name, sender, senderPort, receiver, receiverPort, false, extra);
             break;
         }
         default:
